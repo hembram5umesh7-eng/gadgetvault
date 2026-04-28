@@ -94,7 +94,7 @@ function Checkout() {
       quantity: it.quantity,
       unit_price: it.basePrice,
       customization_price: it.customizationPrice,
-      design_data: (it.designData as object) ?? null,
+      design_data: (it.designData as never) ?? null,
       preview_front_url: it.previewFront ?? null,
       preview_back_url: it.previewBack ?? null,
     }));
