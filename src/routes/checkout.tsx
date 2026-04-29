@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatINR } from "@/lib/order-utils";
 import { toast } from "sonner";
 import { z } from "zod";
+import { createRazorpayOrder, verifyRazorpayPayment } from "@/server/razorpay.functions";
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
+  }
+}
+
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") return resolve(false);
+    if (window.Razorpay) return resolve(true);
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
+}
 
 export const Route = createFileRoute("/checkout")({ component: Checkout });
 
@@ -29,6 +49,8 @@ function Checkout() {
   const cart = useCart();
   const [submitting, setSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">("cod");
+  const createRzpOrder = useServerFn(createRazorpayOrder);
+  const verifyRzpPayment = useServerFn(verifyRazorpayPayment);
 
   useEffect(() => {
     if (!user) navigate({ to: "/auth", search: { redirect: "/checkout" } });
@@ -106,6 +128,59 @@ function Checkout() {
       return;
     }
 
+    if (paymentMethod === "online") {
+      const ok = await loadRazorpayScript();
+      if (!ok) {
+        setSubmitting(false);
+        toast.error("Failed to load payment gateway");
+        return;
+      }
+      try {
+        const rzp = await createRzpOrder({ data: { orderId: order.id } });
+        const options = {
+          key: rzp.keyId,
+          amount: rzp.amount,
+          currency: rzp.currency,
+          name: "ThreadForge",
+          description: `Order ${rzp.orderNumber}`,
+          order_id: rzp.razorpayOrderId,
+          prefill: { name: a.full_name, contact: a.phone, email: user.email ?? "" },
+          theme: { color: "#ff3f6c" },
+          handler: async (resp: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
+            try {
+              await verifyRzpPayment({
+                data: {
+                  orderId: order.id,
+                  razorpay_order_id: resp.razorpay_order_id,
+                  razorpay_payment_id: resp.razorpay_payment_id,
+                  razorpay_signature: resp.razorpay_signature,
+                },
+              });
+              cart.clear();
+              toast.success(`Payment successful · Order ${order.order_number}`);
+              navigate({ to: "/orders/$orderId", params: { orderId: order.id } });
+            } catch (err) {
+              toast.error(err instanceof Error ? err.message : "Payment verification failed");
+              setSubmitting(false);
+            }
+          },
+          modal: {
+            ondismiss: () => {
+              setSubmitting(false);
+              toast.message("Payment cancelled. Your order is saved as unpaid.");
+              navigate({ to: "/orders/$orderId", params: { orderId: order.id } });
+            },
+          },
+        };
+        if (!window.Razorpay) throw new Error("Razorpay unavailable");
+        new window.Razorpay(options).open();
+      } catch (err) {
+        setSubmitting(false);
+        toast.error(err instanceof Error ? err.message : "Could not start payment");
+      }
+      return;
+    }
+
     cart.clear();
     toast.success(`Order ${order.order_number} placed!`);
     navigate({ to: "/orders/$orderId", params: { orderId: order.id } });
@@ -149,11 +224,11 @@ function Checkout() {
                     <p className="text-xs text-muted-foreground">Pay when you receive your order</p>
                   </div>
                 </label>
-                <label className={`flex gap-3 p-3 rounded-lg border-2 cursor-not-allowed opacity-60 ${paymentMethod === "online" ? "border-primary bg-primary/5" : "border-border"}`}>
-                  <input type="radio" name="pay" value="online" disabled />
+                <label className={`flex gap-3 p-3 rounded-lg border-2 cursor-pointer ${paymentMethod === "online" ? "border-primary bg-primary/5" : "border-border"}`}>
+                  <input type="radio" name="pay" value="online" checked={paymentMethod === "online"} onChange={() => setPaymentMethod("online")} />
                   <div>
-                    <p className="font-semibold text-sm">Razorpay / Stripe (coming soon)</p>
-                    <p className="text-xs text-muted-foreground">Online card / UPI payments</p>
+                    <p className="font-semibold text-sm">Pay Online (Razorpay)</p>
+                    <p className="text-xs text-muted-foreground">Card, UPI, Netbanking, Wallets</p>
                   </div>
                 </label>
               </div>
