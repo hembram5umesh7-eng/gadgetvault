@@ -65,12 +65,17 @@ function Admin() {
     <div className="min-h-screen flex flex-col">
       <SiteHeader />
       <main className="flex-1 container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-extrabold mb-6">Admin Dashboard</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-extrabold">Admin Dashboard</h1>
+          <Button asChild className="font-bold">
+            <Link to="/admin/products"><Package className="h-4 w-4" /> Manage Products</Link>
+          </Button>
+        </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-gradient-hero text-white rounded-xl p-5"><p className="text-xs uppercase font-bold opacity-80">Total Orders</p><p className="text-3xl font-extrabold">{stats.totalOrders}</p></div>
           <div className="bg-gradient-sale rounded-xl p-5"><p className="text-xs uppercase font-bold opacity-70">Revenue</p><p className="text-3xl font-extrabold">{formatINR(stats.revenue)}</p></div>
-          <div className="bg-card border rounded-xl p-5"><p className="text-xs uppercase font-bold text-muted-foreground">Products</p><p className="text-3xl font-extrabold">{stats.products}</p></div>
+          <Link to="/admin/products" className="bg-card border rounded-xl p-5 hover:border-primary transition-colors"><p className="text-xs uppercase font-bold text-muted-foreground">Products</p><p className="text-3xl font-extrabold">{stats.products}</p><p className="text-xs text-primary font-semibold mt-1">Manage →</p></Link>
         </div>
 
         <section className="bg-card border rounded-xl p-5 mb-6">
