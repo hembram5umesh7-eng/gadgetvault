@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatINR } from "@/lib/order-utils";
 import { toast } from "sonner";
 import { z } from "zod";
+import { createRazorpayOrder, verifyRazorpayPayment } from "@/server/razorpay.functions";
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
+  }
+}
+
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") return resolve(false);
+    if (window.Razorpay) return resolve(true);
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
+}
 
 export const Route = createFileRoute("/checkout")({ component: Checkout });
 
