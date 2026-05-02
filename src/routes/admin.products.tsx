@@ -278,11 +278,6 @@ function ProductEditor({
   onSave: () => void;
 }) {
   const set = <K extends keyof Omit<Product, "id">>(k: K, v: Omit<Product, "id">[K]) => onChange({ ...value, [k]: v });
-  const setImg = (i: number, url: string) => {
-    const next = [...value.images]; next[i] = url; set("images", next);
-  };
-  const addImg = () => set("images", [...value.images, ""]);
-  const removeImg = (i: number) => set("images", value.images.filter((_, idx) => idx !== i));
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
@@ -326,26 +321,17 @@ function ProductEditor({
           </div>
 
           <section className="border rounded-lg p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-bold"><ImageIcon className="h-4 w-4" /> Images</div>
-            <p className="text-xs text-muted-foreground">Paste image URLs. First image is the cover. Use the storage bucket <code>product-images</code>.</p>
-            <div className="space-y-2">
-              {value.images.map((url, i) => (
-                <div key={i} className="flex gap-2 items-center">
-                  <div className="w-10 h-12 rounded bg-muted overflow-hidden shrink-0">{url && <img src={url} alt="" className="w-full h-full object-cover" />}</div>
-                  <Input value={url} onChange={(e) => setImg(i, e.target.value)} placeholder="https://…/image.jpg" />
-                  <Button size="icon" variant="ghost" onClick={() => removeImg(i)}><X className="h-4 w-4" /></Button>
-                </div>
-              ))}
-              <Button size="sm" variant="outline" onClick={addImg}><Plus className="h-3 w-3" /> Add image URL</Button>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-3 pt-2 border-t">
+            <div className="flex items-center gap-2 text-sm font-bold"><ImageIcon className="h-4 w-4" /> Product Images</div>
+            <p className="text-xs text-muted-foreground">First image is the cover shown on cards.</p>
+            <MultiImageUpload values={value.images} onChange={(urls) => set("images", urls)} folder="products" />
+            <div className="grid sm:grid-cols-2 gap-4 pt-3 border-t">
               <div>
-                <Label>Mockup Front (customizer)</Label>
-                <Input value={value.mockup_front_url ?? ""} onChange={(e) => set("mockup_front_url", e.target.value)} placeholder="https://…/front.png" />
+                <Label className="mb-1 block">Mockup Front (customizer)</Label>
+                <SingleImageUpload value={value.mockup_front_url} onChange={(u) => set("mockup_front_url", u)} folder="mockups" placeholder="front mockup URL" />
               </div>
               <div>
-                <Label>Mockup Back (customizer)</Label>
-                <Input value={value.mockup_back_url ?? ""} onChange={(e) => set("mockup_back_url", e.target.value)} placeholder="https://…/back.png" />
+                <Label className="mb-1 block">Mockup Back (customizer)</Label>
+                <SingleImageUpload value={value.mockup_back_url} onChange={(u) => set("mockup_back_url", u)} folder="mockups" placeholder="back mockup URL" />
               </div>
             </div>
           </section>
