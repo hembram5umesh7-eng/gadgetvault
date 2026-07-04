@@ -14,7 +14,8 @@
     "format": "prettier --write .",
     "db:verify": "node --env-file=.env scripts/verify-db.mjs",
     "db:setup": "node --env-file=.env scripts/apply-migrations.mjs",
-    "seed:users": "node --env-file=.env scripts/seed-test-users.mjs"
+    "seed:users": "node --env-file=.env scripts/seed-test-users.mjs",
+    "shiprocket:sync-pickups": "node --env-file=.env scripts/sync-shiprocket-pickups.mjs"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",

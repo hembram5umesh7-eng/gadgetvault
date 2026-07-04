@@ -96,31 +96,43 @@ export type Database = {
         Row: {
           active: boolean
           address: string | null
+          city: string | null
           contact_email: string | null
           contact_phone: string | null
           created_at: string
           id: string
           name: string
+          pincode: string | null
+          shiprocket_pickup_name: string | null
+          state: string | null
           user_id: string | null
         }
         Insert: {
           active?: boolean
           address?: string | null
+          city?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
           id?: string
           name: string
+          pincode?: string | null
+          shiprocket_pickup_name?: string | null
+          state?: string | null
           user_id?: string | null
         }
         Update: {
           active?: boolean
           address?: string | null
+          city?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
           id?: string
           name?: string
+          pincode?: string | null
+          shiprocket_pickup_name?: string | null
+          state?: string | null
           user_id?: string | null
         }
         Relationships: []

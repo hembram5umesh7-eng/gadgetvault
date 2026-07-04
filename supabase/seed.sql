@@ -86,12 +86,16 @@ where p.slug in (
 )
 on conflict (product_id, size, color) do nothing;
 
-insert into public.manufacturers (name, contact_email, contact_phone, address, active)
+insert into public.manufacturers (name, contact_email, contact_phone, address, city, state, pincode, shiprocket_pickup_name, active)
 select
   'StitchWorks India',
   'orders@stitchworks.in',
   '+91-9876543210',
-  'Plot 12, Industrial Area, Surat, Gujarat',
+  'Plot 12, Industrial Area, Udhna',
+  'Surat',
+  'Gujarat',
+  '394210',
+  'StitchWorks-India',
   true
 where not exists (
   select 1 from public.manufacturers where name = 'StitchWorks India'

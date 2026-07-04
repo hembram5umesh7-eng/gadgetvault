@@ -78,6 +78,81 @@ function paymentMode(method: string, paymentStatus: string): "COD" | "Prepaid" {
   return "COD";
 }
 
+type SupplierPickup = {
+  id: string;
+  name: string;
+  contact_email: string | null;
+  contact_phone: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  pincode: string | null;
+  shiprocket_pickup_name: string | null;
+};
+
+function defaultPickupName(name: string) {
+  return name.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 36) || "Supplier";
+}
+
+async function ensureSupplierPickupLocation(supplier: SupplierPickup, token: string): Promise<string> {
+  const pickupName = supplier.shiprocket_pickup_name?.trim() || defaultPickupName(supplier.name);
+  if (!supplier.address?.trim() || !supplier.city?.trim() || !supplier.state?.trim() || !supplier.pincode?.trim()) {
+    throw new Error(
+      `Supplier "${supplier.name}" needs full warehouse address (street, city, state, pincode) in Admin → Suppliers before shipping.`,
+    );
+  }
+  if (!supplier.contact_email?.trim() || !supplier.contact_phone?.trim()) {
+    throw new Error(`Supplier "${supplier.name}" needs contact email and phone for Shiprocket pickup.`);
+  }
+
+  try {
+    await shiprocketFetch<{ success?: boolean }>("/v1/external/settings/company/addpickup", {
+      method: "POST",
+      token,
+      body: JSON.stringify({
+        pickup_location: pickupName,
+        name: supplier.name.slice(0, 80),
+        email: supplier.contact_email.trim(),
+        phone: normalizePhone(supplier.contact_phone),
+        address: supplier.address.trim().slice(0, 80),
+        address_2: "",
+        city: supplier.city.trim(),
+        state: supplier.state.trim(),
+        country: "India",
+        pin_code: supplier.pincode.trim(),
+      }),
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (!/already|exist|duplicate/i.test(msg)) throw err;
+  }
+
+  if (supplier.shiprocket_pickup_name !== pickupName) {
+    await supabaseAdmin
+      .from("manufacturers")
+      .update({ shiprocket_pickup_name: pickupName })
+      .eq("id", supplier.id);
+  }
+
+  return pickupName;
+}
+
+async function resolvePickupLocation(order: { manufacturer_id: string | null }, token: string) {
+  if (!order.manufacturer_id) {
+    throw new Error("Assign a supplier to this order first — courier picks up from the supplier warehouse.");
+  }
+
+  const { data: supplier, error } = await supabaseAdmin
+    .from("manufacturers")
+    .select("id,name,contact_email,contact_phone,address,city,state,pincode,shiprocket_pickup_name")
+    .eq("id", order.manufacturer_id)
+    .maybeSingle();
+
+  if (error || !supplier) throw new Error("Assigned supplier not found");
+  const pickupName = await ensureSupplierPickupLocation(supplier as SupplierPickup, token);
+  return { pickupName, supplierName: supplier.name };
+}
+
 async function assertShipmentAccess(userId: string, order: { manufacturer_id: string | null }) {
   const { data: roles } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", userId);
   const roleList = (roles ?? []).map((r) => r.role);
@@ -169,7 +244,7 @@ export const createShiprocketShipment = createServerFn({ method: "POST" })
     if (!lineItems.length) throw new Error("Order has no items");
 
     const token = await getShiprocketToken();
-    const { pickupLocation } = shiprocketConfig();
+    const { pickupName, supplierName } = await resolvePickupLocation(ord, token);
     const billing = splitName(ord.ship_full_name);
     const phone = normalizePhone(ord.ship_phone);
     const address = [ord.ship_line1, ord.ship_line2].filter(Boolean).join(", ");
@@ -193,7 +268,7 @@ export const createShiprocketShipment = createServerFn({ method: "POST" })
         body: JSON.stringify({
           order_id: ord.order_number,
           order_date: ord.created_at.slice(0, 16).replace("T", " "),
-          pickup_location: pickupLocation,
+          pickup_location: pickupName,
           billing_customer_name: billing.first,
           billing_last_name: billing.last,
           billing_address: address,
@@ -269,6 +344,8 @@ export const createShiprocketShipment = createServerFn({ method: "POST" })
       labelUrl,
       shiprocketOrderId,
       shiprocketShipmentId,
+      pickupLocation: pickupName,
+      supplierName,
       alreadyCreated: false,
     };
   });

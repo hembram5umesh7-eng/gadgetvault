@@ -69,7 +69,7 @@ function AdminOrders() {
     setShippingId(orderId);
     try {
       const result = await createShipment({ data: { orderId } });
-      toast.success(`AWB: ${result.awb}${result.courier ? ` · ${result.courier}` : ""}`);
+      toast.success(`AWB: ${result.awb}${result.courier ? ` · ${result.courier}` : ""}${result.pickupLocation ? ` · Pickup: ${result.pickupLocation}` : ""}`);
       if (result.labelUrl) window.open(result.labelUrl, "_blank");
       refresh();
     } catch (e) {

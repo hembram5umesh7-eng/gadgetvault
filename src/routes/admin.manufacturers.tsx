@@ -45,6 +45,14 @@ interface Manufacturer {
 
   address: string | null;
 
+  city: string | null;
+
+  state: string | null;
+
+  pincode: string | null;
+
+  shiprocket_pickup_name: string | null;
+
   active: boolean;
 
   user_id: string | null;
@@ -96,6 +104,12 @@ function AdminManufacturers() {
       contact_phone: editing.contact_phone?.trim() || null,
 
       address: editing.address?.trim() || null,
+
+      city: editing.city?.trim() || null,
+
+      state: editing.state?.trim() || null,
+
+      pincode: editing.pincode?.trim() || null,
 
       active: editing.active ?? true,
 
@@ -230,7 +244,7 @@ function AdminManufacturers() {
 
       actions={
 
-        <Button onClick={() => setEditing({ name: "", contact_email: "", contact_phone: "", address: "", active: true, loginPassword: "Supplier@1234" })}>
+        <Button onClick={() => setEditing({ name: "", contact_email: "", contact_phone: "", address: "", city: "", state: "", pincode: "", active: true, loginPassword: "Supplier@1234" })}>
 
           <Plus className="h-4 w-4" /> Add Supplier
 
@@ -242,9 +256,13 @@ function AdminManufacturers() {
 
       <div className="bg-card border rounded-xl p-4 mb-4 text-sm text-muted-foreground">
 
-        <p className="font-semibold text-foreground mb-1">How supplier login works</p>
+        <p className="font-semibold text-foreground mb-1">Suppliers & Shiprocket pickup</p>
 
         <ul className="list-disc pl-5 space-y-1">
+
+          <li><strong>Warehouse address</strong> below = courier pickup location (Shiprocket picks parcel from supplier)</li>
+
+          <li>Assign supplier on order → <strong>Ship via Shiprocket</strong> uses that supplier&apos;s address automatically</li>
 
           <li>Add supplier with email + temporary password — login is created automatically (admin only)</li>
 
@@ -277,6 +295,15 @@ function AdminManufacturers() {
                 <p className="text-sm text-muted-foreground">{m.contact_phone || "No phone"}</p>
 
                 {m.address && <p className="text-xs text-muted-foreground mt-1">{m.address}</p>}
+                {(m.city || m.pincode) && (
+                  <p className="text-xs text-muted-foreground">
+                    {[m.city, m.state].filter(Boolean).join(", ")}
+                    {m.pincode ? ` - ${m.pincode}` : ""}
+                  </p>
+                )}
+                {m.shiprocket_pickup_name && (
+                  <p className="text-[10px] font-semibold text-primary mt-1">Pickup: {m.shiprocket_pickup_name}</p>
+                )}
 
               </div>
 
@@ -339,7 +366,14 @@ function AdminManufacturers() {
 
               <div><Label>Phone</Label><Input value={editing.contact_phone ?? ""} onChange={(e) => setEditing({ ...editing, contact_phone: e.target.value })} /></div>
 
-              <div><Label>Address</Label><Input value={editing.address ?? ""} onChange={(e) => setEditing({ ...editing, address: e.target.value })} /></div>
+              <div><Label>Warehouse / pickup street address *</Label><Input value={editing.address ?? ""} onChange={(e) => setEditing({ ...editing, address: e.target.value })} placeholder="Plot 12, Industrial Area, Udhna" /></div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div><Label>City *</Label><Input value={editing.city ?? ""} onChange={(e) => setEditing({ ...editing, city: e.target.value })} placeholder="Surat" /></div>
+                <div><Label>State *</Label><Input value={editing.state ?? ""} onChange={(e) => setEditing({ ...editing, state: e.target.value })} placeholder="Gujarat" /></div>
+                <div><Label>Pincode *</Label><Input value={editing.pincode ?? ""} onChange={(e) => setEditing({ ...editing, pincode: e.target.value })} placeholder="394210" /></div>
+              </div>
+              <p className="text-xs text-muted-foreground">Courier (Shiprocket) picks up packed orders from this address.</p>
 
               <div className="flex items-center justify-between border rounded-lg p-3">
 
