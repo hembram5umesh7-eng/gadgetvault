@@ -69,7 +69,7 @@ function SupplierPanel() {
     if (list.length) {
       const { data: its } = await supabase
         .from("order_items")
-        .select("id,order_id,product_name,size,color,quantity,unit_price,customization_price")
+        .select("id,order_id,product_name,size,color,quantity,unit_price")
         .in("order_id", list.map((x) => x.id));
       const grouped: Record<string, InvoiceItem[]> = {};
       ((its ?? []) as (InvoiceItem & { order_id: string })[]).forEach((row) => {
@@ -278,7 +278,7 @@ function SupplierPanel() {
                           <div key={it.id} className="p-3 border rounded-lg text-sm">
                             <p className="font-semibold">{it.product_name}</p>
                             <p className="text-muted-foreground">Size {it.size} · {it.color} · Qty {it.quantity}</p>
-                            <p className="text-xs mt-1">{formatINR((Number(it.unit_price) + Number(it.customization_price)) * it.quantity)}</p>
+                            <p className="text-xs mt-1">{formatINR(Number(it.unit_price) * it.quantity)}</p>
                           </div>
                         ))}
                       </div>

@@ -41,7 +41,6 @@ export interface InvoiceItem {
   color: string;
   quantity: number;
   unit_price: number;
-  customization_price: number;
 }
 
 export type PrintDocType = "invoice" | "packing" | "label";
@@ -81,7 +80,7 @@ function PrintBody({
   const docTitle =
     type === "invoice" ? "Tax Invoice / Proforma" : type === "packing" ? "Packing Slip" : "Shipping Label";
   const lineTotal = (it: InvoiceItem) =>
-    (Number(it.unit_price) + Number(it.customization_price)) * it.quantity;
+    Number(it.unit_price) * it.quantity;
 
   return (
     <div className="supplier-print-sheet bg-white text-black p-6 text-sm leading-relaxed">

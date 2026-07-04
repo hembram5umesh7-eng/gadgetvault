@@ -100,7 +100,6 @@ type OrderItem = {
   color: string;
   quantity: number;
   unit_price: number;
-  customization_price: number;
 };
 
 type OrderRow = {
@@ -163,7 +162,7 @@ export const createShiprocketShipment = createServerFn({ method: "POST" })
 
     const { data: items, error: iErr } = await supabaseAdmin
       .from("order_items")
-      .select("product_name, size, color, quantity, unit_price, customization_price")
+      .select("product_name, size, color, quantity, unit_price")
       .eq("order_id", data.orderId);
     if (iErr) throw new Error(iErr.message);
     const lineItems = (items ?? []) as OrderItem[];
@@ -208,7 +207,7 @@ export const createShiprocketShipment = createServerFn({ method: "POST" })
             name: `${it.product_name} (${it.size}/${it.color})`,
             sku: `${ord.order_number}-${idx + 1}`,
             units: it.quantity,
-            selling_price: Number(it.unit_price) + Number(it.customization_price),
+            selling_price: Number(it.unit_price),
             weight: ITEM_WEIGHT_KG,
           })),
           payment_method: payMode,
