@@ -1,17 +1,21 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
+import { CheckoutSteps, PageHeader } from "@/components/checkout-steps";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useCart } from "@/lib/cart-context";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { formatINR } from "@/lib/order-utils";
+import { STORE } from "@/lib/store-info";
 import { toast } from "sonner";
 import { z } from "zod";
 import { createRazorpayOrder, verifyRazorpayPayment } from "@/lib/razorpay.functions";
+import { Card, ShieldTick, Truck, Wallet2 } from "iconsax-react";
 
 declare global {
   interface Window {
@@ -45,23 +49,44 @@ const addrSchema = z.object({
 
 function Checkout() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, ready } = useAuth();
   const cart = useCart();
   const [submitting, setSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">("cod");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [profileName, setProfileName] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
   const createRzpOrder = useServerFn(createRazorpayOrder);
   const verifyRzpPayment = useServerFn(verifyRazorpayPayment);
 
   useEffect(() => {
+    if (!ready) return;
     if (!user) navigate({ to: "/auth", search: { redirect: "/checkout" } });
-  }, [user, navigate]);
+  }, [ready, user, navigate]);
 
-  const shipping = cart.subtotal > 999 || cart.subtotal === 0 ? 0 : 79;
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("full_name,phone")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.full_name) setProfileName(data.full_name);
+        if (data?.phone) setProfilePhone(data.phone);
+      });
+  }, [user]);
+
+  const shipping = cart.subtotal > STORE.freeShippingMin || cart.subtotal === 0 ? 0 : STORE.standardShippingFee;
   const total = cart.subtotal + shipping;
 
   const placeOrder = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user) return;
+    if (!agreedToTerms) {
+      toast.error("Please accept Terms & Privacy Policy to continue");
+      return;
+    }
     if (cart.items.length === 0) { toast.error("Cart is empty"); return; }
 
     const fd = new FormData(e.currentTarget);
@@ -84,7 +109,7 @@ function Checkout() {
         user_id: user.id,
         status: "received",
         payment_method: paymentMethod === "cod" ? "cod" : "razorpay",
-        payment_status: paymentMethod === "cod" ? "pending" : "pending",
+        payment_status: "pending",
         subtotal: cart.subtotal,
         shipping_fee: shipping,
         total,
@@ -137,11 +162,11 @@ function Checkout() {
           key: rzp.keyId,
           amount: rzp.amount,
           currency: rzp.currency,
-          name: "ThreadForge",
+          name: STORE.name,
           description: `Order ${rzp.orderNumber}`,
           order_id: rzp.razorpayOrderId,
           prefill: { name: a.full_name, contact: a.phone, email: user.email ?? "" },
-          theme: { color: "#ff3f6c" },
+          theme: { color: "#2563eb" },
           handler: async (resp: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
             try {
               await verifyRzpPayment({
@@ -182,73 +207,145 @@ function Checkout() {
     navigate({ to: "/orders/$orderId", params: { orderId: order.id } });
   };
 
-  if (!user || cart.items.length === 0) {
+  if (!ready || !user) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <SiteHeader /><div className="flex-1 container mx-auto px-4 py-12">Loading…</div><SiteFooter />
+      <div className="min-h-screen flex flex-col bg-muted/20">
+        <SiteHeader />
+        <div className="flex-1 container mx-auto px-4 py-12 text-center text-muted-foreground">Loading checkout…</div>
+        <SiteFooter />
+      </div>
+    );
+  }
+
+  if (cart.items.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col bg-muted/20">
+        <SiteHeader />
+        <main className="flex-1 container mx-auto px-4 py-12 text-center">
+          <p className="text-lg font-semibold mb-4">Your cart is empty</p>
+          <Button asChild><Link to="/">Continue Shopping</Link></Button>
+        </main>
+        <SiteFooter />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-muted/20">
       <SiteHeader />
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-extrabold mb-6">Checkout</h1>
-        <form onSubmit={placeOrder} className="grid lg:grid-cols-[1fr_360px] gap-8">
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl">
+        <CheckoutSteps current={2} />
+        <PageHeader title="Secure Checkout" subtitle="Complete your order with encrypted Razorpay payments" />
+
+        <form onSubmit={placeOrder} className="grid lg:grid-cols-[1fr_380px] gap-8">
           <div className="space-y-6">
-            <section className="bg-card border rounded-xl p-5">
-              <h2 className="font-bold mb-4">Shipping Address</h2>
-              <div className="grid sm:grid-cols-2 gap-3">
-                <div className="sm:col-span-2"><Label>Full Name</Label><Input name="full_name" required /></div>
-                <div><Label>Phone</Label><Input name="phone" required pattern="[0-9+]+" /></div>
-                <div><Label>Pincode</Label><Input name="pincode" required pattern="[0-9]+" /></div>
-                <div className="sm:col-span-2"><Label>Address Line 1</Label><Input name="line1" required /></div>
-                <div className="sm:col-span-2"><Label>Address Line 2 (optional)</Label><Input name="line2" /></div>
-                <div><Label>City</Label><Input name="city" required /></div>
-                <div><Label>State</Label><Input name="state" required /></div>
+            <section className="premium-card p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <Truck size={20} className="text-primary" variant="Bold" />
+                <h2 className="font-bold text-lg">Shipping Address</h2>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <Label>Full Name</Label>
+                  <Input name="full_name" required defaultValue={profileName} key={`name-${profileName}`} className="rounded-xl mt-1.5" />
+                </div>
+                <div>
+                  <Label>Phone</Label>
+                  <Input name="phone" required pattern="[0-9+]+" defaultValue={profilePhone} key={`phone-${profilePhone}`} className="rounded-xl mt-1.5" />
+                </div>
+                <div>
+                  <Label>Pincode</Label>
+                  <Input name="pincode" required pattern="[0-9]+" className="rounded-xl mt-1.5" />
+                </div>
+                <div className="sm:col-span-2">
+                  <Label>Address Line 1</Label>
+                  <Input name="line1" required className="rounded-xl mt-1.5" />
+                </div>
+                <div className="sm:col-span-2">
+                  <Label>Address Line 2 (optional)</Label>
+                  <Input name="line2" className="rounded-xl mt-1.5" />
+                </div>
+                <div>
+                  <Label>City</Label>
+                  <Input name="city" required className="rounded-xl mt-1.5" />
+                </div>
+                <div>
+                  <Label>State</Label>
+                  <Input name="state" required className="rounded-xl mt-1.5" />
+                </div>
               </div>
             </section>
 
-            <section className="bg-card border rounded-xl p-5">
-              <h2 className="font-bold mb-4">Payment Method</h2>
-              <div className="space-y-2">
-                <label className={`flex gap-3 p-3 rounded-lg border-2 cursor-pointer ${paymentMethod === "cod" ? "border-primary bg-primary/5" : "border-border"}`}>
-                  <input type="radio" name="pay" value="cod" checked={paymentMethod === "cod"} onChange={() => setPaymentMethod("cod")} />
-                  <div>
-                    <p className="font-semibold text-sm">Cash on Delivery</p>
-                    <p className="text-xs text-muted-foreground">Pay when you receive your order</p>
+            <section className="premium-card p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <Wallet2 size={20} className="text-primary" variant="Bold" />
+                <h2 className="font-bold text-lg">Payment Method</h2>
+              </div>
+              <div className="space-y-3">
+                <label className={`flex gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === "cod" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/30"}`}>
+                  <input type="radio" name="pay" value="cod" checked={paymentMethod === "cod"} onChange={() => setPaymentMethod("cod")} className="mt-1" />
+                  <div className="flex-1">
+                    <p className="font-bold text-sm">Cash on Delivery</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Pay when you receive your order</p>
                   </div>
+                  <Truck size={22} className="text-muted-foreground shrink-0" />
                 </label>
-                <label className={`flex gap-3 p-3 rounded-lg border-2 cursor-pointer ${paymentMethod === "online" ? "border-primary bg-primary/5" : "border-border"}`}>
-                  <input type="radio" name="pay" value="online" checked={paymentMethod === "online"} onChange={() => setPaymentMethod("online")} />
-                  <div>
-                    <p className="font-semibold text-sm">Pay Online (Razorpay)</p>
-                    <p className="text-xs text-muted-foreground">Card, UPI, Netbanking, Wallets</p>
+                <label className={`flex gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === "online" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/30"}`}>
+                  <input type="radio" name="pay" value="online" checked={paymentMethod === "online"} onChange={() => setPaymentMethod("online")} className="mt-1" />
+                  <div className="flex-1">
+                    <p className="font-bold text-sm">Pay Online via Razorpay</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">UPI · Cards · Netbanking · Wallets</p>
                   </div>
+                  <Card size={22} className="text-muted-foreground shrink-0" variant="Bold" />
                 </label>
               </div>
             </section>
+
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-muted/50 border">
+              <Checkbox id="terms" checked={agreedToTerms} onCheckedChange={(v) => setAgreedToTerms(v === true)} className="mt-0.5" />
+              <label htmlFor="terms" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
+                I agree to the{" "}
+                <Link to="/terms" className="text-primary font-medium hover:underline">Terms & Conditions</Link>,{" "}
+                <Link to="/privacy" className="text-primary font-medium hover:underline">Privacy Policy</Link>,{" "}
+                <Link to="/refund" className="text-primary font-medium hover:underline">Refund Policy</Link>, and{" "}
+                <Link to="/shipping" className="text-primary font-medium hover:underline">Shipping Policy</Link>.
+              </label>
+            </div>
           </div>
 
-          <aside className="bg-card border rounded-xl p-5 h-fit sticky top-24">
-            <h2 className="font-bold mb-3">Summary ({cart.items.length} items)</h2>
-            <div className="space-y-1 text-sm max-h-48 overflow-y-auto">
+          <aside className="premium-card p-6 h-fit lg:sticky lg:top-28">
+            <h2 className="font-bold text-lg mb-4">Order Summary</h2>
+            <div className="space-y-3 text-sm max-h-52 overflow-y-auto pr-1">
               {cart.items.map((it) => (
-                <div key={it.id} className="flex justify-between gap-2">
-                  <span className="truncate">{it.productName} × {it.quantity}</span>
-                  <span>{formatINR(it.basePrice * it.quantity)}</span>
+                <div key={it.id} className="flex gap-3">
+                  <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden shrink-0">
+                    {it.productImage && <img src={it.productImage} alt="" className="w-full h-full object-cover" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate text-sm">{it.productName}</p>
+                    <p className="text-xs text-muted-foreground">Qty {it.quantity} · {it.color}</p>
+                  </div>
+                  <span className="font-semibold shrink-0">{formatINR(it.basePrice * it.quantity)}</span>
                 </div>
               ))}
             </div>
-            <div className="border-t mt-3 pt-3 space-y-1 text-sm">
-              <div className="flex justify-between"><span>Subtotal</span><span>{formatINR(cart.subtotal)}</span></div>
-              <div className="flex justify-between"><span>Shipping</span><span>{shipping === 0 ? "FREE" : formatINR(shipping)}</span></div>
-              <div className="flex justify-between font-extrabold text-lg pt-2 border-t mt-2"><span>Total</span><span>{formatINR(total)}</span></div>
+            <div className="border-t mt-4 pt-4 space-y-2 text-sm">
+              <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatINR(cart.subtotal)}</span></div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Shipping</span>
+                <span>{shipping === 0 ? <span className="text-success font-semibold">FREE</span> : formatINR(shipping)}</span>
+              </div>
+              <div className="flex justify-between font-extrabold text-xl pt-3 border-t mt-2">
+                <span>Total</span><span>{formatINR(total)}</span>
+              </div>
             </div>
-            <Button type="submit" size="lg" className="w-full mt-4 font-bold" disabled={submitting}>
-              {submitting ? "Placing order…" : "Place Order"}
+            <Button type="submit" size="lg" className="w-full mt-5 font-bold rounded-xl h-12" disabled={submitting || !agreedToTerms}>
+              {submitting ? "Processing…" : paymentMethod === "online" ? "Pay Securely" : "Place Order"}
             </Button>
+            <div className="flex items-center justify-center gap-1.5 mt-3 text-xs text-muted-foreground">
+              <ShieldTick size={14} className="text-success" variant="Bold" />
+              Secured by Razorpay · 256-bit encryption
+            </div>
           </aside>
         </form>
       </main>

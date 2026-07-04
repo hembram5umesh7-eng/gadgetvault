@@ -7,7 +7,7 @@ import pg from "pg";
 const url = process.env.SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY;
-const projectRef = process.env.VITE_SUPABASE_PROJECT_ID || "oceuhhvbqyqqpmukljgm";
+const projectRef = process.env.VITE_SUPABASE_PROJECT_ID || "zpvkbwovurryqqqvdxzb";
 const dbPassword = process.env.SUPABASE_DB_PASSWORD;
 
 if (!url || !serviceKey || !dbPassword) {
@@ -23,15 +23,15 @@ const authHeaders = {
 
 const TEST_USERS = [
   {
-    email: "admin@threadforge.in",
+    email: "admin@gadgetvault.in",
     password: "Admin@1234",
-    fullName: "ThreadForge Admin",
+    fullName: "GadgetVault Admin",
     role: "admin",
   },
   {
-    email: "mfr@threadforge.in",
+    email: "supplier@gadgetvault.in",
     password: "Mfr@1234",
-    fullName: "StitchWorks Partner",
+    fullName: "TechSupply Partner",
     role: "manufacturer",
   },
 ];
@@ -132,10 +132,10 @@ for (const account of TEST_USERS) {
 
   if (account.role === "manufacturer") {
     await db.query(
-      `update public.manufacturers set user_id = $1 where name = 'StitchWorks India'`,
+      `update public.manufacturers set user_id = $1 where name = 'TechSupply India'`,
       [userId],
     );
-    console.log("  Linked to manufacturer: StitchWorks India");
+    console.log("  Linked to manufacturer: TechSupply India");
   }
   console.log("");
 }

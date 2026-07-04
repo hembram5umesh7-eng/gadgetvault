@@ -14,9 +14,9 @@ export type OrderStatus = (typeof ORDER_STATUSES)[number] | "cancelled";
 export const STATUS_LABEL: Record<OrderStatus, string> = {
   received: "Order Received",
   processing: "Processing",
-  sent_to_manufacturer: "Sent to Manufacturer",
-  in_production: "In Production",
-  completed: "Manufacturing Complete",
+  sent_to_manufacturer: "Sent to Supplier",
+  in_production: "Being Prepared",
+  completed: "Quality Checked",
   packed: "Packed",
   shipped: "Shipped",
   delivered: "Delivered",

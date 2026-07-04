@@ -23,8 +23,18 @@ export function isSuperAdmin(roles: AppRole[]) {
   return roles.includes("admin");
 }
 
+export function isShopperAccount(roles: string[]): boolean {
+  return !roles.some((r) => r === "admin" || r === "staff" || r === "manufacturer");
+}
+
 export function resolvePostLoginRedirect(requested: string, roles: AppRole[]): string {
+  const isShopper =
+    roles.length === 0 ||
+    (roles.length === 1 && roles[0] === "user") ||
+    (!roles.includes("admin") && !roles.includes("staff") && !roles.includes("manufacturer"));
+
   if (requested && requested !== "/") return requested;
+  if (isShopper) return "/";
   if (roles.includes("admin")) return "/admin";
   if (roles.includes("staff")) return "/staff";
   if (roles.includes("manufacturer")) return "/partner";

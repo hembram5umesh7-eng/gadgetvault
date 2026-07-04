@@ -2,6 +2,8 @@ import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-r
 import appCss from "../styles.css?url";
 import { AuthProvider } from "@/lib/auth-context";
 import { CartProvider } from "@/lib/cart-context";
+import { WishlistProvider } from "@/lib/wishlist-context";
+import { CompareProvider } from "@/lib/compare-context";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createRootRoute({
@@ -9,10 +11,10 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "ThreadForge — Custom Fashion, Made to Order" },
-      { name: "description", content: "Design your own t-shirts, hoodies, jeans, and shirts. Live preview, made-to-order manufacturing, delivered to your door." },
-      { property: "og:title", content: "ThreadForge — Custom Fashion, Made to Order" },
-      { property: "og:description", content: "Design it. Wear it. Own it." },
+      { title: "GadgetVault — Premium Gadgets & Accessories" },
+      { name: "description", content: "Shop earbuds, smartwatches, chargers, power banks & tech accessories. Genuine products, fast delivery across India." },
+      { property: "og:title", content: "GadgetVault — Premium Gadgets & Accessories" },
+      { property: "og:description", content: "Tech that powers your everyday." },
       { property: "og:type", content: "website" },
     ],
     links: [
@@ -43,8 +45,12 @@ function RootComponent() {
   return (
     <AuthProvider>
       <CartProvider>
-        <Outlet />
-        <Toaster position="top-center" richColors />
+        <WishlistProvider>
+          <CompareProvider>
+            <Outlet />
+            <Toaster position="top-center" richColors />
+          </CompareProvider>
+        </WishlistProvider>
       </CartProvider>
     </AuthProvider>
   );

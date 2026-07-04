@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { APPAREL_SIZES, PRESET_COLORS, variantKey, type VariantRow } from "@/lib/product-variants";
+import { GADGET_MODELS, PRESET_COLORS, variantKey, type VariantRow } from "@/lib/product-variants";
 import { Plus, Trash2, Grid3X3 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -27,7 +27,7 @@ export function VariantMatrixEditor({
   onClose: () => void;
   onChanged: () => void;
 }) {
-  const [sizes, setSizes] = useState<string[]>(["S", "M", "L", "XL"]);
+  const [sizes, setSizes] = useState<string[]>(["Standard"]);
   const [colors, setColors] = useState<ColorRow[]>([{ name: "Black", hex: "#111111" }]);
   const [stockMap, setStockMap] = useState<Record<string, number>>({});
   const [defaultStock, setDefaultStock] = useState(10);
@@ -59,9 +59,7 @@ export function VariantMatrixEditor({
   }, [colors, sizes, stockMap]);
 
   const toggleSize = (size: string) => {
-    setSizes((prev) => (prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size].sort(
-      (a, b) => APPAREL_SIZES.indexOf(a as typeof APPAREL_SIZES[number]) - APPAREL_SIZES.indexOf(b as typeof APPAREL_SIZES[number]),
-    )));
+    setSizes((prev) => (prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]));
   };
 
   const addColor = (preset?: ColorRow) => {
@@ -88,7 +86,7 @@ export function VariantMatrixEditor({
   };
 
   const saveAll = async () => {
-    if (!sizes.length) { toast.error("Select at least one size"); return; }
+    if (!sizes.length) { toast.error("Select at least one model/storage option"); return; }
     if (!colors.length) { toast.error("Add at least one color"); return; }
     if (colors.some((c) => !c.name.trim())) { toast.error("Every color needs a name"); return; }
 
@@ -153,13 +151,13 @@ export function VariantMatrixEditor({
         </DialogHeader>
 
         <p className="text-sm text-muted-foreground">
-          One product, many colors & sizes — standard fashion SKU matrix. Pick sizes and colors, set stock per cell, then save all at once.
+          One product, many variants — color & model matrix. Pick options, set stock per cell, then save all at once.
         </p>
 
         <section className="space-y-2">
-          <Label className="text-xs uppercase font-bold text-muted-foreground">Sizes</Label>
+          <Label className="text-xs uppercase font-bold text-muted-foreground">Model / Storage</Label>
           <div className="flex flex-wrap gap-2">
-            {APPAREL_SIZES.map((s) => (
+            {GADGET_MODELS.map((s) => (
               <button
                 key={s}
                 type="button"

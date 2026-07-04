@@ -29,7 +29,11 @@ interface Product {
   description: string | null;
   category: string;
   base_price: number;
-  fabric: string | null;
+  specs: string | null;
+  brand: string | null;
+  warranty_months: number;
+  is_bestseller: boolean;
+  is_deal: boolean;
   images: string[];
   active: boolean;
 }
@@ -46,14 +50,18 @@ interface Variant {
 const slugify = (s: string) =>
   s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").slice(0, 80);
 
-function emptyProduct(defaultCategory = "tshirt"): Omit<Product, "id"> {
+function emptyProduct(defaultCategory = "audio"): Omit<Product, "id"> {
   return {
     name: "",
     slug: "",
     description: "",
     category: defaultCategory,
     base_price: 499,
-    fabric: "",
+    specs: "",
+    brand: "",
+    warranty_months: 12,
+    is_bestseller: false,
+    is_deal: false,
     images: [],
     active: true,
   };
@@ -76,7 +84,7 @@ function AdminProducts() {
   const refresh = async () => {
     const { data, error } = await supabase
       .from("products")
-      .select("id,name,slug,description,category,base_price,fabric,images,active")
+      .select("id,name,slug,description,category,base_price,specs,brand,warranty_months,is_bestseller,is_deal,images,active")
       .order("created_at", { ascending: false });
     if (error) { toast.error(error.message); return; }
     const list = (data ?? []) as Product[];
@@ -118,7 +126,7 @@ function AdminProducts() {
   }, [products, filter]);
 
   const startNew = () => setEditing({ data: emptyProduct(categories[0]?.slug ?? "other") });
-  const startEdit = (p: Product) => setEditing({ id: p.id, data: { ...p, description: p.description ?? "", fabric: p.fabric ?? "" } });
+  const startEdit = (p: Product) => setEditing({ id: p.id, data: { ...p, description: p.description ?? "", specs: p.specs ?? "", brand: p.brand ?? "" } });
 
   const save = async () => {
     if (!editing) return;
@@ -130,7 +138,8 @@ function AdminProducts() {
       ...d,
       slug,
       description: d.description?.trim() || null,
-      fabric: d.fabric?.trim() || null,
+      specs: d.specs?.trim() || null,
+      brand: d.brand?.trim() || null,
       images: (d.images ?? []).filter((s) => s.trim().length > 0),
     };
     if (editing.id) {
@@ -287,7 +296,7 @@ function ProductEditor({
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
               <Label>Name *</Label>
-              <Input value={value.name} onChange={(e) => set("name", e.target.value)} placeholder="Oversized Cotton Tee" />
+              <Input value={value.name} onChange={(e) => set("name", e.target.value)} placeholder="Pro TWS Earbuds X3" />
             </div>
             <div>
               <Label>Slug</Label>
@@ -312,8 +321,12 @@ function ProductEditor({
               <Input type="number" min={1} value={value.base_price} onChange={(e) => set("base_price", Number(e.target.value))} />
             </div>
             <div>
-              <Label>Fabric</Label>
-              <Input value={value.fabric ?? ""} onChange={(e) => set("fabric", e.target.value)} placeholder="180 GSM Cotton" />
+              <Label>Brand</Label>
+              <Input value={value.brand ?? ""} onChange={(e) => set("brand", e.target.value)} placeholder="boAt, Noise, Mi…" />
+            </div>
+            <div>
+              <Label>Technical Specifications</Label>
+              <Input value={value.specs ?? ""} onChange={(e) => set("specs", e.target.value)} placeholder="Connectivity: BT 5.3 · Battery: 40hr · ANC: Yes" />
             </div>
           </div>
 

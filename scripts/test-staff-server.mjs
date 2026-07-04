@@ -3,7 +3,7 @@ import ws from "ws";
 
 const url = process.env.SUPABASE_URL;
 const publishable = process.env.SUPABASE_PUBLISHABLE_KEY;
-const email = "admin@threadforge.in";
+const email = "admin@gadgetvault.in";
 const pw = "Admin@1234";
 
 const login = await fetch(`${url}/auth/v1/token?grant_type=password`, {

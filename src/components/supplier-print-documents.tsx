@@ -144,7 +144,7 @@ function PrintBody({
             {items.map((it) => (
               <tr key={it.id} className="border-b">
                 <td className="p-2 font-medium">{it.product_name}</td>
-                <td className="p-2 text-gray-600">Size {it.size} · {it.color}</td>
+                <td className="p-2 text-gray-600">{it.size} · {it.color} · Qty {it.quantity}</td>
                 <td className="p-2 text-right">{it.quantity}</td>
                 {type === "invoice" && (
                   <td className="p-2 text-right">{formatINR(lineTotal(it))}</td>
@@ -178,7 +178,7 @@ function PrintBody({
 
       {type === "invoice" && (
         <p className="text-xs text-gray-500 mt-6 border-t pt-3">
-          Proforma invoice from {supplier.name} via ThreadForge. For GST billing, export to your registered system.
+          Proforma invoice from {supplier.name} via GadgetVault. For GST billing, export to your registered system.
         </p>
       )}
       {type === "packing" && (

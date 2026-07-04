@@ -277,7 +277,7 @@ function SupplierPanel() {
                         {(items[o.id] ?? []).map((it) => (
                           <div key={it.id} className="p-3 border rounded-lg text-sm">
                             <p className="font-semibold">{it.product_name}</p>
-                            <p className="text-muted-foreground">Size {it.size} · {it.color} · Qty {it.quantity}</p>
+                            <p className="text-muted-foreground">{it.color} · {it.size} · Qty {it.quantity}</p>
                             <p className="text-xs mt-1">{formatINR(Number(it.unit_price) * it.quantity)}</p>
                           </div>
                         ))}
@@ -332,7 +332,7 @@ function SupplierPanel() {
 
                       <div>
                         <label className="text-xs font-bold uppercase">Production notes</label>
-                        <Textarea defaultValue={o.supplier_notes ?? ""} id={`sn-${o.id}`} rows={2} className="mt-1" placeholder="Fabric batch, QC notes…" />
+                        <Textarea defaultValue={o.supplier_notes ?? ""} id={`sn-${o.id}`} rows={2} className="mt-1" placeholder="Batch ID, QC notes…" />
                         <Button size="sm" variant="outline" className="mt-2" onClick={() => saveNotes(o.id, (document.getElementById(`sn-${o.id}`) as HTMLTextAreaElement).value)}>
                           Save notes
                         </Button>

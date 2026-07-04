@@ -5,7 +5,7 @@
 import { spawnSync } from "node:child_process";
 
 const repoName = process.argv[2];
-const description = process.argv[3] || "ThreadForge — Indian fashion e-commerce platform";
+const description = process.argv[3] || "GadgetVault — Premium gadgets & accessories e-commerce";
 
 if (!repoName) {
   console.error("Usage: node scripts/create-github-repo.mjs <repo-name>");

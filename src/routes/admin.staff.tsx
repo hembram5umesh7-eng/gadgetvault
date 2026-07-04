@@ -157,7 +157,7 @@ function AdminStaff() {
               </div>
               <div>
                 <Label>Email (login ID)</Label>
-                <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="staff@threadforge.in" />
+                <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="staff@gadgetvault.in" />
               </div>
               <div>
                 <Label>Temporary password</Label>

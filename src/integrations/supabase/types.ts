@@ -379,41 +379,53 @@ export type Database = {
         Row: {
           active: boolean
           base_price: number
+          brand: string | null
           category: string
           created_at: string
           description: string | null
-          fabric: string | null
           id: string
           images: string[]
+          is_bestseller: boolean
+          is_deal: boolean
           name: string
           slug: string
+          specs: string | null
           updated_at: string
+          warranty_months: number
         }
         Insert: {
           active?: boolean
           base_price: number
+          brand?: string | null
           category: string
           created_at?: string
           description?: string | null
-          fabric?: string | null
           id?: string
           images?: string[]
+          is_bestseller?: boolean
+          is_deal?: boolean
           name: string
           slug: string
+          specs?: string | null
           updated_at?: string
+          warranty_months?: number
         }
         Update: {
           active?: boolean
           base_price?: number
+          brand?: string | null
           category?: string
           created_at?: string
           description?: string | null
-          fabric?: string | null
           id?: string
           images?: string[]
+          is_bestseller?: boolean
+          is_deal?: boolean
           name?: string
           slug?: string
+          specs?: string | null
           updated_at?: string
+          warranty_months?: number
         }
         Relationships: []
       }

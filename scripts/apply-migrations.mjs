@@ -17,7 +17,7 @@ const root = join(__dirname, "..");
 const projectRef =
   process.env.VITE_SUPABASE_PROJECT_ID ||
   process.env.SUPABASE_PROJECT_ID ||
-  "oceuhhvbqyqqpmukljgm";
+  "zpvkbwovurryqqqvdxzb";
 const dbPassword = process.env.SUPABASE_DB_PASSWORD;
 
 if (!dbPassword) {

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdminShell } from "@/components/admin-shell";
 import { formatINR, STATUS_LABEL, type OrderStatus } from "@/lib/order-utils";
 import { useAuth } from "@/lib/auth-context";
+import { isShopperAccount } from "@/lib/auth-session";
 import { Package, ShoppingCart, TrendingUp, Truck } from "lucide-react";
 
 export const Route = createFileRoute("/admin/")({ component: AdminDashboard });
@@ -17,16 +18,25 @@ function AdminDashboard() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: o }, { count: pc }, { count: sc }, { count: cc }] = await Promise.all([
+      const [{ data: o }, { count: pc }, { count: sc }, { data: profiles }, { data: roleRows }] = await Promise.all([
         supabase.from("orders").select("id,order_number,status,total,created_at").order("created_at", { ascending: false }).limit(10),
         supabase.from("products").select("*", { count: "exact", head: true }),
         supabase.from("manufacturers").select("*", { count: "exact", head: true }),
-        supabase.from("profiles").select("*", { count: "exact", head: true }),
+        supabase.from("profiles").select("id"),
+        supabase.from("user_roles").select("user_id,role"),
       ]);
       setOrders((o ?? []) as typeof orders);
       setProductCount(pc ?? 0);
       setSupplierCount(sc ?? 0);
-      setCustomerCount(cc ?? 0);
+
+      const roleMap: Record<string, string[]> = {};
+      (roleRows ?? []).forEach((row: { user_id: string; role: string }) => {
+        (roleMap[row.user_id] ??= []).push(row.role);
+      });
+      const shopperCount = (profiles ?? []).filter((p: { id: string }) =>
+        isShopperAccount(roleMap[p.id] ?? ["user"]),
+      ).length;
+      setCustomerCount(shopperCount);
     })();
   }, []);
 
@@ -37,7 +47,7 @@ function AdminDashboard() {
   }, [orders]);
 
   return (
-    <AdminShell title="Dashboard" subtitle="Overview of your ThreadForge store.">
+    <AdminShell title="Dashboard" subtitle="Overview of your GadgetVault store.">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
           { label: "Products", value: productCount, icon: Package, to: "/admin/products" },
