@@ -5,7 +5,7 @@ import { AdminShell } from "@/components/admin-shell";
 import { formatINR, STATUS_LABEL, type OrderStatus } from "@/lib/order-utils";
 import { useAuth } from "@/lib/auth-context";
 import { isShopperAccount } from "@/lib/auth-session";
-import { Package, ShoppingCart, TrendingUp, Truck } from "lucide-react";
+import { Package, ShoppingCart, TrendingUp, Truck, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/admin/")({ component: AdminDashboard });
 
@@ -72,7 +72,10 @@ function AdminDashboard() {
         <div className="bg-card border rounded-xl p-5">
           <h2 className="font-bold mb-3">Quick links</h2>
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <Link to="/admin/products" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold">+ Add product</Link>
+            <Link to="/admin/cj-sync" className="p-3 rounded-lg bg-primary/10 text-primary hover:bg-primary/15 font-semibold flex items-center gap-2">
+              <Upload className="h-4 w-4 shrink-0" /> CJ Dropshipping Import
+            </Link>
+            <Link to="/admin/products" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold">Manage products</Link>
             <Link to="/admin/categories" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold">Manage categories</Link>
             <Link to="/admin/orders" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold">View all orders</Link>
             <Link to="/admin/manufacturers" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold">Add supplier</Link>

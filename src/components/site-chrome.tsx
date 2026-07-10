@@ -1,9 +1,9 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  Cpu, ShoppingBag, User, SearchNormal1, Logout, HambergerMenu, CloseCircle,
-  Sms, Call, ShieldTick, Truck, Heart, Element3,
-} from "iconsax-react";
+  Cpu, LogOut, Menu, X, Mail, Phone, ShieldCheck, Truck,
+  UserRound, Search, Heart, LayoutGrid, ShoppingCart,
+} from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useCart } from "@/lib/cart-context";
 import { useWishlist } from "@/lib/wishlist-context";
@@ -21,11 +21,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const FALLBACK_NAV = [
-  { label: "Audio", slug: "audio" },
-  { label: "Chargers", slug: "chargers" },
-  { label: "Smartwatches", slug: "smartwatches" },
-  { label: "Accessories", slug: "accessories" },
+const STORE_CATEGORIES = [
+  { label: "Kitchen Accessories", slug: "kitchen-accessories" },
+  { label: "Unique Gadgets", slug: "unique-gadgets" },
+  { label: "Necessities", slug: "necessities" },
 ];
 
 export function SiteHeader() {
@@ -39,8 +38,8 @@ export function SiteHeader() {
   const [q, setQ] = useState("");
 
   const navItems = categories.length
-    ? categories.slice(0, 5).map((c) => ({ label: c.name, slug: c.slug }))
-    : FALLBACK_NAV;
+    ? categories.filter((c) => c.slug).slice(0, 3).map((c) => ({ label: c.name, slug: c.slug }))
+    : STORE_CATEGORIES;
 
   const search = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,15 +47,15 @@ export function SiteHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70">
+    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/95 backdrop-blur-xl shadow-sm">
       <div className="bg-gradient-promo text-white text-xs font-medium text-center py-2 px-4 tracking-wide">
         Free shipping ₹{STORE.freeShippingMin}+ · Secure Razorpay payments · 100% Genuine products
       </div>
 
-      <div className="container mx-auto flex h-[4.25rem] items-center gap-3 px-4">
+      <div className="container mx-auto flex h-[4.25rem] items-center gap-2 sm:gap-3 px-4">
         <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/15 transition-colors">
-            <Cpu size={22} className="text-primary" variant="Bold" />
+            <Cpu className="h-5 w-5 text-primary" strokeWidth={2.5} />
           </div>
           <div className="leading-none">
             <span className="font-extrabold text-lg tracking-tight block">
@@ -68,34 +67,33 @@ export function SiteHeader() {
           </div>
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-0.5 flex-1 min-w-0 mx-2">
+        <nav className="hidden lg:flex items-center gap-1 flex-1 min-w-0 mx-1">
           {navItems.map((n) => (
             <Link key={n.slug} to="/category/$category" params={{ category: n.slug }}
-              className="px-3.5 py-2 text-sm font-semibold text-foreground/75 hover:text-primary rounded-lg hover:bg-primary/5 transition-all"
-              activeProps={{ className: "text-primary bg-primary/5" }}>{n.label}</Link>
+              className="px-3 py-2 text-sm font-semibold text-foreground/80 hover:text-primary rounded-lg hover:bg-primary/5 transition-all whitespace-nowrap"
+              activeProps={{ className: "text-primary bg-primary/10" }}>{n.label}</Link>
           ))}
-          <Link to="/deals" className="px-3.5 py-2 text-sm font-bold text-primary rounded-lg hover:bg-primary/5">Deals</Link>
         </nav>
 
-        <form onSubmit={search} className="hidden md:flex w-full max-w-xs lg:max-w-sm shrink-0 md:ml-auto lg:ml-0">
+        <form onSubmit={search} className="hidden md:flex flex-1 max-w-xs lg:max-w-sm shrink-0">
           <div className="relative w-full">
-            <SearchNormal1 size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={2.5} />
             <Input
-              placeholder="Search gadgets, brands…"
+              placeholder="Search products…"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              className="pl-10 h-10 rounded-xl bg-muted/60 border-transparent focus-visible:bg-background focus-visible:ring-primary/20"
+              className="pl-9 h-10 rounded-xl bg-muted/60 border-transparent focus-visible:bg-background"
             />
           </div>
         </form>
 
-        <div className="flex items-center gap-0.5 shrink-0">
+        <div className="flex items-center gap-0.5 shrink-0 ml-auto md:ml-0">
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2 rounded-xl h-10">
-                  <User size={20} />
-                  <span className="hidden sm:inline text-sm font-medium">Account</span>
+                <Button variant="ghost" size="sm" className="gap-1.5 rounded-xl h-10 px-2.5 hover:bg-primary/10">
+                  <UserRound className="h-5 w-5 text-foreground" strokeWidth={2.5} />
+                  <span className="hidden sm:inline text-sm font-semibold">Account</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-xl">
@@ -123,7 +121,7 @@ export function SiteHeader() {
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => signOut().then(() => navigate({ to: "/" }))} className="text-destructive">
-                  <Logout size={16} className="mr-2" />
+                  <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -132,33 +130,34 @@ export function SiteHeader() {
             <Button
               variant="ghost"
               size="sm"
-              className="rounded-xl h-10"
+              className="rounded-xl h-10 gap-1.5 px-2.5"
               onClick={() => navigate({ to: "/auth", search: { redirect: typeof window !== "undefined" ? window.location.pathname : "/" } })}
             >
-              <User size={20} className="sm:mr-2" />
-              <span className="hidden sm:inline font-medium">Sign In</span>
+              <UserRound className="h-5 w-5" strokeWidth={2.5} />
+              <span className="hidden sm:inline font-semibold">Sign In</span>
             </Button>
           )}
 
-          <Button variant="ghost" size="sm" className="relative rounded-xl h-10 w-10 p-0 hidden sm:flex" onClick={() => navigate({ to: "/wishlist" })}>
-            <Heart size={20} />
+          <Button variant="ghost" size="sm" className="relative rounded-xl h-10 w-10 p-0 hidden sm:flex hover:bg-primary/10" onClick={() => navigate({ to: "/wishlist" })} aria-label="Wishlist">
+            <Heart className="h-5 w-5" strokeWidth={2.5} />
             {wishCount > 0 && <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-5 min-w-5 px-1 flex items-center justify-center">{wishCount}</span>}
           </Button>
-          <Button variant="ghost" size="sm" className="relative rounded-xl h-10 w-10 p-0 hidden sm:flex" onClick={() => navigate({ to: "/compare" })}>
-            <Element3 size={20} />
+          <Button variant="ghost" size="sm" className="relative rounded-xl h-10 w-10 p-0 hidden sm:flex hover:bg-primary/10" onClick={() => navigate({ to: "/compare" })} aria-label="Compare">
+            <LayoutGrid className="h-5 w-5" strokeWidth={2.5} />
             {compareCount > 0 && <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-5 min-w-5 px-1 flex items-center justify-center">{compareCount}</span>}
           </Button>
-          <Button variant="ghost" size="sm" className="relative rounded-xl h-10 w-10 p-0" onClick={() => navigate({ to: "/cart" })}>
-            <ShoppingBag size={20} />
+          <Button variant="ghost" size="sm" className="relative rounded-xl h-10 gap-1.5 px-2.5 hover:bg-primary/10" onClick={() => navigate({ to: "/cart" })} aria-label="Cart">
+            <ShoppingCart className={`h-5 w-5 ${count > 0 ? "text-primary" : ""}`} strokeWidth={2.5} />
+            <span className="hidden md:inline text-sm font-semibold">Cart</span>
             {count > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-5 min-w-5 px-1 flex items-center justify-center shadow-sm">
+              <span className="absolute -top-1 right-0 md:static bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-5 min-w-5 px-1 flex items-center justify-center ring-2 ring-background">
                 {count}
               </span>
             )}
           </Button>
 
-          <Button variant="ghost" size="sm" className="lg:hidden rounded-xl h-10 w-10 p-0" onClick={() => setMobileOpen((v) => !v)}>
-            {mobileOpen ? <CloseCircle size={20} /> : <HambergerMenu size={20} />}
+          <Button variant="ghost" size="sm" className="lg:hidden rounded-xl h-10 w-10 p-0" onClick={() => setMobileOpen((v) => !v)} aria-label="Menu">
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
       </div>
@@ -190,22 +189,22 @@ export function SiteHeader() {
 export function SiteFooter() {
   const { categories } = useCategories();
   const shopLinks = categories.length
-    ? categories.map((c) => ({ label: c.name, slug: c.slug }))
-    : FALLBACK_NAV;
+    ? categories.filter((c) => c.slug).slice(0, 3).map((c) => ({ label: c.name, slug: c.slug }))
+    : STORE_CATEGORIES;
 
   return (
     <footer className="border-t bg-gradient-to-b from-muted/20 to-muted/40 mt-auto">
       <div className="border-b border-border/50">
         <div className="container mx-auto px-4 py-8 grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
-            { icon: ShieldTick, title: "Secure Payments", desc: "Razorpay encrypted checkout" },
+            { icon: ShieldCheck, title: "Secure Payments", desc: "Razorpay encrypted checkout" },
             { icon: Truck, title: "Fast Delivery", desc: `Pan-India ${STORE.deliveryDays}` },
             { icon: Cpu, title: "Genuine Products", desc: "Verified suppliers only" },
-            { icon: Call, title: "24/7 Support", desc: STORE.phone },
+            { icon: Phone, title: "24/7 Support", desc: STORE.phone },
           ].map((b) => (
             <div key={b.title} className="flex gap-3 items-start">
               <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <b.icon size={20} className="text-primary" variant="Bold" />
+                <b.icon className="h-5 w-5 text-primary" strokeWidth={2.5} />
               </div>
               <div>
                 <p className="font-bold text-sm">{b.title}</p>
@@ -219,15 +218,15 @@ export function SiteFooter() {
       <div className="container mx-auto px-4 py-12 grid gap-10 md:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-2">
           <div className="flex items-center gap-2 mb-4">
-            <Cpu size={22} className="text-primary" variant="Bold" />
+            <Cpu className="h-5 w-5 text-primary" strokeWidth={2.5} />
             <span className="font-extrabold text-lg">GadgetVault</span>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
             {STORE.description}
           </p>
           <div className="mt-4 space-y-1.5 text-sm text-muted-foreground">
-            <p className="flex items-center gap-2"><Sms size={16} className="text-primary" /> {STORE.email}</p>
-            <p className="flex items-center gap-2"><Call size={16} className="text-primary" /> {STORE.phone}</p>
+            <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-primary" /> {STORE.email}</p>
+            <p className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /> {STORE.phone}</p>
           </div>
         </div>
 
@@ -248,11 +247,8 @@ export function SiteFooter() {
             <li><Link to="/orders" className="hover:text-primary transition-colors">Track Order</Link></li>
             <li><Link to="/shipping" className="hover:text-primary transition-colors">Shipping Info</Link></li>
             <li><Link to="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
-            <li><Link to="/deals" className="hover:text-primary transition-colors">Deals & Offers</Link></li>
             <li><Link to="/wishlist" className="hover:text-primary transition-colors">Wishlist</Link></li>
-            <li><Link to="/compare" className="hover:text-primary transition-colors">Compare</Link></li>
             <li><Link to="/faq" className="hover:text-primary transition-colors">FAQ</Link></li>
-            <li><Link to="/warranty" className="hover:text-primary transition-colors">Warranty</Link></li>
             <li><Link to="/refund" className="hover:text-primary transition-colors">Refund Policy</Link></li>
             <li><Link to="/auth" className="hover:text-primary transition-colors">Sign In</Link></li>
           </ul>

@@ -1,10 +1,13 @@
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
-import { formatINR, ORDER_STATUSES, STATUS_LABEL, statusIndex, type OrderStatus } from "@/lib/order-utils";
-import { Check } from "lucide-react";
+import { CustomerAccountShell } from "@/components/customer-account-shell";
+import { OrderCancelButton } from "@/components/order-cancel-button";
+import { formatINR, ORDER_STATUSES, STATUS_LABEL, statusIndex, canCustomerCancel, type OrderStatus } from "@/lib/order-utils";
+import { Check, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/orders/$orderId")({ component: OrderDetail });
 
@@ -21,14 +24,22 @@ interface Item {
 
 function OrderDetail() {
   const { orderId } = useParams({ from: "/orders/$orderId" });
-  const { user } = useAuth();
+  const { user, ready } = useAuth();
+  const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
   const [items, setItems] = useState<Item[]>([]);
+  const [denied, setDenied] = useState(false);
 
   useEffect(() => {
+    if (ready && !user) navigate({ to: "/auth", search: { redirect: `/orders/${orderId}` } });
+  }, [ready, user, navigate, orderId]);
+
+  useEffect(() => {
+    if (!user) return;
     const load = async () => {
-      const { data: o } = await supabase.from("orders").select("*").eq("id", orderId).maybeSingle();
-      setOrder(o as Order | null);
+      const { data: o } = await supabase.from("orders").select("*").eq("id", orderId).eq("user_id", user.id).maybeSingle();
+      if (!o) { setDenied(true); return; }
+      setOrder(o as Order);
       const { data: its } = await supabase.from("order_items").select("*").eq("order_id", orderId);
       setItems((its as Item[]) ?? []);
     };
@@ -43,23 +54,45 @@ function OrderDetail() {
     return () => { supabase.removeChannel(ch); };
   }, [orderId, user]);
 
+  if (denied) return (
+    <div className="min-h-screen flex flex-col bg-muted/20">
+      <SiteHeader />
+      <main className="flex-1 container mx-auto px-4 py-12 text-center">
+        <p className="text-muted-foreground mb-4">Order not found or you don&apos;t have access.</p>
+        <Button asChild><Link to="/orders">Back to orders</Link></Button>
+      </main>
+      <SiteFooter />
+    </div>
+  );
+
   if (!order) return (
-    <div className="min-h-screen flex flex-col"><SiteHeader /><div className="flex-1 container mx-auto px-4 py-12">Loading…</div><SiteFooter /></div>
+    <div className="min-h-screen flex flex-col bg-muted/20"><SiteHeader /><div className="flex-1 container mx-auto px-4 py-12">Loading…</div><SiteFooter /></div>
   );
 
   const curIdx = statusIndex(order.status);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-muted/20">
       <SiteHeader />
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="flex justify-between items-start mb-6 flex-wrap gap-2">
-          <div>
-            <h1 className="text-2xl font-extrabold">Order {order.order_number}</h1>
-            <p className="text-sm text-muted-foreground">Placed on {new Date(order.created_at).toLocaleDateString("en-IN", { dateStyle: "long" })}</p>
-          </div>
+      <main className="flex-1">
+        <CustomerAccountShell title={`Order ${order.order_number}`} subtitle={`Placed on ${new Date(order.created_at).toLocaleDateString("en-IN", { dateStyle: "long" })}`}>
+        <Button variant="ghost" size="sm" className="mb-4 -ml-2" asChild>
+          <Link to="/orders"><ArrowLeft className="h-4 w-4 mr-1" /> All orders</Link>
+        </Button>
+        <div className="flex justify-between items-start mb-6 flex-wrap gap-3">
           <p className="text-2xl font-extrabold">{formatINR(order.total)}</p>
+          <OrderCancelButton
+            orderId={order.id}
+            status={order.status}
+            onCancelled={() => setOrder((prev) => prev ? { ...prev, status: "cancelled" } : prev)}
+          />
         </div>
+
+        {canCustomerCancel(order.status) && (
+          <p className="text-xs text-muted-foreground mb-4 -mt-2">
+            Need to change something? You can cancel this order before it is packed for shipping.
+          </p>
+        )}
 
         {/* Tracker */}
         <section className="bg-card border rounded-xl p-5 mb-6">
@@ -121,6 +154,7 @@ function OrderDetail() {
             </div>
           </section>
         </div>
+        </CustomerAccountShell>
       </main>
       <SiteFooter />
     </div>

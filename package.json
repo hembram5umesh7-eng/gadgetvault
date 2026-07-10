@@ -14,7 +14,11 @@
     "format": "prettier --write .",
     "db:verify": "node --env-file=.env scripts/verify-db.mjs",
     "db:setup": "node --env-file=.env scripts/apply-migrations.mjs",
+    "purge:store": "node --env-file=.env scripts/purge-store-data.mjs",
+    "cj:retry": "node --env-file=.env scripts/retry-cj-sync.mjs",
+    "variants:backfill": "node --env-file=.env scripts/backfill-variant-colors.mjs",
     "seed:users": "node --env-file=.env scripts/seed-test-users.mjs",
+    "cj:setup": "node --env-file=.env scripts/cj-setup.mjs",
     "shiprocket:sync-pickups": "node --env-file=.env scripts/sync-shiprocket-pickups.mjs"
   },
   "dependencies": {

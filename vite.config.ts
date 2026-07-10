@@ -58,7 +58,19 @@ export default defineConfig(({ mode }) => {
           },
         },
       }),
-      nitro(),
+      nitro({
+        routeRules: {
+          "/**": {
+            headers: {
+              "X-Frame-Options": "SAMEORIGIN",
+              "X-Content-Type-Options": "nosniff",
+              "Referrer-Policy": "strict-origin-when-cross-origin",
+              "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+              "X-DNS-Prefetch-Control": "off",
+            },
+          },
+        },
+      }),
       react(),
     ],
   };

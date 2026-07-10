@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
+import { CustomerAccountShell } from "@/components/customer-account-shell";
 import { useWishlist } from "@/lib/wishlist-context";
 import { formatINR } from "@/lib/order-utils";
 import { Button } from "@/components/ui/button";
@@ -13,13 +14,10 @@ function WishlistPage() {
   return (
     <div className="min-h-screen flex flex-col bg-muted/20">
       <SiteHeader />
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
-        <h1 className="text-2xl md:text-3xl font-extrabold mb-6 flex items-center gap-2">
-          <Heart size={28} className="text-primary" variant="Bold" /> My Wishlist
-        </h1>
-
+      <main className="flex-1">
+        <CustomerAccountShell title="My Wishlist" subtitle="Gadgets you saved for later">
         {items.length === 0 ? (
-          <div className="premium-card text-center py-16">
+          <div className="bg-card border rounded-xl text-center py-16">
             <Heart size={48} className="mx-auto text-muted-foreground/40 mb-4" />
             <p className="font-semibold mb-2">Your wishlist is empty</p>
             <Button asChild><Link to="/">Discover Gadgets</Link></Button>
@@ -27,7 +25,7 @@ function WishlistPage() {
         ) : (
           <div className="space-y-3">
             {items.map((item) => (
-              <div key={item.productId} className="premium-card flex gap-4 p-4 items-center">
+              <div key={item.productId} className="bg-card border rounded-xl flex gap-4 p-4 items-center">
                 <div className="w-20 h-20 rounded-xl bg-muted p-2 shrink-0">
                   {item.image && <img src={item.image} alt={item.name} className="w-full h-full object-contain" />}
                 </div>
@@ -49,6 +47,7 @@ function WishlistPage() {
             ))}
           </div>
         )}
+        </CustomerAccountShell>
       </main>
       <SiteFooter />
     </div>

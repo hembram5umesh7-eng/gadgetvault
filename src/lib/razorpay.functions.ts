@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { processCJFulfillment } from "@/lib/cj-dropshipping.functions";
 import { createHmac, timingSafeEqual } from "crypto";
 import { z } from "zod";
 
@@ -100,6 +101,8 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
       amount: order.total,
       status: "paid",
     });
+
+    void processCJFulfillment(data.orderId).catch(() => {});
 
     return { success: true };
   });

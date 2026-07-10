@@ -15,16 +15,21 @@ export interface CartItem {
 
 interface CartContextValue {
   items: CartItem[];
-  add: (item: CartItem) => void;
+  add: (item: Omit<CartItem, "id"> & { id?: string }) => void;
   remove: (id: string) => void;
   updateQty: (id: string, qty: number) => void;
   clear: () => void;
   subtotal: number;
   count: number;
+  lineCount: number;
 }
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 const STORAGE_KEY = "gv_cart_v2";
+
+function lineKey(item: Pick<CartItem, "productId" | "variantId" | "size" | "color">) {
+  return `${item.productId}|${item.variantId ?? ""}|${item.size}|${item.color}`;
+}
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -42,17 +47,36 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } catch {}
   }, [items]);
 
-  const add = (item: CartItem) => setItems((prev) => [...prev, item]);
+  const add = (item: Omit<CartItem, "id"> & { id?: string }) => {
+    setItems((prev) => {
+      const key = lineKey(item);
+      const existing = prev.find((i) => lineKey(i) === key);
+      if (existing) {
+        return prev.map((i) =>
+          i.id === existing.id ? { ...i, quantity: i.quantity + (item.quantity || 1) } : i,
+        );
+      }
+      return [...prev, { ...item, id: item.id ?? crypto.randomUUID(), quantity: item.quantity || 1 }];
+    });
+  };
+
   const remove = (id: string) => setItems((prev) => prev.filter((i) => i.id !== id));
-  const updateQty = (id: string, qty: number) =>
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity: Math.max(1, qty) } : i)));
+
+  const updateQty = (id: string, qty: number) => {
+    if (qty <= 0) {
+      setItems((prev) => prev.filter((i) => i.id !== id));
+      return;
+    }
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity: qty } : i)));
+  };
+
   const clear = () => setItems([]);
 
   const subtotal = items.reduce((sum, i) => sum + i.basePrice * i.quantity, 0);
   const count = items.reduce((s, i) => s + i.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ items, add, remove, updateQty, clear, subtotal, count }}>
+    <CartContext.Provider value={{ items, add, remove, updateQty, clear, subtotal, count, lineCount: items.length }}>
       {children}
     </CartContext.Provider>
   );

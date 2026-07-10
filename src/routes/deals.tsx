@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { ProductCard, type ProductCardData } from "@/components/product-card";
 import { ImmersiveReveal } from "@/components/animations/immersive-reveal";
-import { Flash } from "iconsax-react";
+import { PRODUCT_CARD_SELECT } from "@/lib/product-pricing";
 
 export const Route = createFileRoute("/deals")({ component: DealsPage });
 
@@ -14,7 +14,7 @@ function DealsPage() {
   useEffect(() => {
     supabase
       .from("products")
-      .select("id,name,slug,base_price,images,category,brand,is_deal")
+      .select(PRODUCT_CARD_SELECT)
       .eq("active", true)
       .eq("is_deal", true)
       .order("base_price")

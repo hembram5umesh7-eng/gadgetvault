@@ -19,6 +19,48 @@ async function assertSuperAdmin(userId: string) {
   if (!data?.some((r) => r.role === "admin")) throw new Error("Forbidden: super admin only");
 }
 
+async function assertStaffOrAdmin(userId: string) {
+  const { data } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", userId);
+  const roles = (data ?? []).map((r) => r.role);
+  if (!roles.includes("admin") && !roles.includes("staff")) throw new Error("Forbidden");
+}
+
+const deleteProductInput = z.object({ productId: z.string().uuid() });
+
+/** Delete product + variants. Past orders keep product_name snapshot (product_id set null). */
+export const deleteAdminProduct = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => parseInput(deleteProductInput, input))
+  .handler(async ({ data, context }) => {
+    await assertStaffOrAdmin(context.userId);
+
+    const { data: product } = await supabaseAdmin
+      .from("products")
+      .select("id, name")
+      .eq("id", data.productId)
+      .maybeSingle();
+    if (!product) throw new Error("Product not found");
+
+    const { count: orderCount } = await supabaseAdmin
+      .from("order_items")
+      .select("id", { count: "exact", head: true })
+      .eq("product_id", data.productId);
+
+    await supabaseAdmin.from("product_variants").delete().eq("product_id", data.productId);
+    const { error } = await supabaseAdmin.from("products").delete().eq("id", data.productId);
+    if (error) throw new Error(error.message);
+
+    return {
+      ok: true as const,
+      name: product.name,
+      hadOrders: (orderCount ?? 0) > 0,
+      message:
+        (orderCount ?? 0) > 0
+          ? `"${product.name}" deleted. ${orderCount} past order(s) still show product name in history.`
+          : `"${product.name}" deleted.`,
+    };
+  });
+
 const setupLoginInput = z.object({
   manufacturerId: z.string().uuid(),
   email: z.string().email("Enter a valid email address"),

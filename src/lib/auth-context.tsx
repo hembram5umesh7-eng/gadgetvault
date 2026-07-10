@@ -8,6 +8,7 @@ import {
   syncSupabaseSession,
   canAccessAdminPanel,
   isSuperAdmin,
+  authStorageKey,
 } from "@/lib/auth-session";
 
 export type { AppRole };
@@ -73,6 +74,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(authStorageKey());
+    }
     setSession(null);
     setUser(null);
     setRoles([]);

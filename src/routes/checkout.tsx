@@ -1,6 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { CheckoutSteps, PageHeader } from "@/components/checkout-steps";
 import { Button } from "@/components/ui/button";
@@ -12,9 +11,14 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { formatINR } from "@/lib/order-utils";
 import { STORE } from "@/lib/store-info";
-import { toast } from "sonner";
+import { CartLineItem } from "@/components/cart-line-item";
 import { z } from "zod";
+import { useAuthedServerFn } from "@/lib/use-authed-server-fn";
+import { validateCoupon } from "@/lib/coupon.functions";
 import { createRazorpayOrder, verifyRazorpayPayment } from "@/lib/razorpay.functions";
+import { triggerCJFulfillment } from "@/lib/cj-dropshipping.functions";
+import { toast } from "sonner";
+
 import { Card, ShieldTick, Truck, Wallet2 } from "iconsax-react";
 
 declare global {
@@ -51,13 +55,19 @@ function Checkout() {
   const navigate = useNavigate();
   const { user, ready } = useAuth();
   const cart = useCart();
+  const { items, remove, updateQty, subtotal } = cart;
   const [submitting, setSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">("cod");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [profileName, setProfileName] = useState("");
   const [profilePhone, setProfilePhone] = useState("");
-  const createRzpOrder = useServerFn(createRazorpayOrder);
-  const verifyRzpPayment = useServerFn(verifyRazorpayPayment);
+  const createRzpOrder = useAuthedServerFn(createRazorpayOrder);
+  const verifyRzpPayment = useAuthedServerFn(verifyRazorpayPayment);
+  const triggerCJ = useAuthedServerFn(triggerCJFulfillment);
+  const validateCouponFn = useAuthedServerFn(validateCoupon);
+  const [couponInput, setCouponInput] = useState("");
+  const [couponCode, setCouponCode] = useState("");
+  const [discount, setDiscount] = useState(0);
 
   useEffect(() => {
     if (!ready) return;
@@ -77,8 +87,28 @@ function Checkout() {
       });
   }, [user]);
 
-  const shipping = cart.subtotal > STORE.freeShippingMin || cart.subtotal === 0 ? 0 : STORE.standardShippingFee;
-  const total = cart.subtotal + shipping;
+  const shipping = subtotal > STORE.freeShippingMin || subtotal === 0 ? 0 : STORE.standardShippingFee;
+  const total = Math.max(0, subtotal + shipping - discount);
+
+  const applyCoupon = async () => {
+    if (!couponInput.trim()) return;
+    try {
+      const res = await validateCouponFn({
+        data: {
+          code: couponInput.trim(),
+          subtotal,
+          productIds: items.map((i) => i.productId),
+        },
+      });
+      setCouponCode(res.code);
+      setDiscount(res.discount);
+      toast.success(`Coupon applied — ${formatINR(res.discount)} off`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Invalid coupon");
+      setCouponCode("");
+      setDiscount(0);
+    }
+  };
 
   const placeOrder = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -87,7 +117,7 @@ function Checkout() {
       toast.error("Please accept Terms & Privacy Policy to continue");
       return;
     }
-    if (cart.items.length === 0) { toast.error("Cart is empty"); return; }
+    if (items.length === 0) { toast.error("Cart is empty"); return; }
 
     const fd = new FormData(e.currentTarget);
     const addrParse = addrSchema.safeParse({
@@ -110,9 +140,11 @@ function Checkout() {
         status: "received",
         payment_method: paymentMethod === "cod" ? "cod" : "razorpay",
         payment_status: "pending",
-        subtotal: cart.subtotal,
+        subtotal: subtotal,
         shipping_fee: shipping,
         total,
+        coupon_code: couponCode || null,
+        discount_amount: discount,
         ship_full_name: a.full_name,
         ship_phone: a.phone,
         ship_line1: a.line1,
@@ -131,7 +163,7 @@ function Checkout() {
       return;
     }
 
-    const itemRows = cart.items.map((it) => ({
+    const itemRows = items.map((it) => ({
       order_id: order.id,
       product_id: it.productId,
       variant_id: it.variantId,
@@ -148,6 +180,18 @@ function Checkout() {
       toast.error(itemsErr.message);
       return;
     }
+
+    const sendToCJ = async () => {
+      try {
+        const cj = await triggerCJ({ data: { orderId: order.id } });
+        if (cj.ok && !cj.skipped) toast.success("Order sent to CJ for fulfillment");
+        else if (!cj.ok) toast.warning(`Order placed — CJ: ${cj.message}`);
+      } catch (err) {
+        toast.warning(
+          err instanceof Error ? err.message : "Order placed — CJ sync failed. Admin can retry from Orders.",
+        );
+      }
+    };
 
     if (paymentMethod === "online") {
       const ok = await loadRazorpayScript();
@@ -177,6 +221,7 @@ function Checkout() {
                   razorpay_signature: resp.razorpay_signature,
                 },
               });
+              await sendToCJ();
               cart.clear();
               toast.success(`Payment successful · Order ${order.order_number}`);
               navigate({ to: "/orders/$orderId", params: { orderId: order.id } });
@@ -202,6 +247,7 @@ function Checkout() {
       return;
     }
 
+    await sendToCJ();
     cart.clear();
     toast.success(`Order ${order.order_number} placed!`);
     navigate({ to: "/orders/$orderId", params: { orderId: order.id } });
@@ -217,7 +263,7 @@ function Checkout() {
     );
   }
 
-  if (cart.items.length === 0) {
+  if (items.length === 0) {
     return (
       <div className="min-h-screen flex flex-col bg-muted/20">
         <SiteHeader />
@@ -314,23 +360,24 @@ function Checkout() {
           </div>
 
           <aside className="premium-card p-6 h-fit lg:sticky lg:top-28">
-            <h2 className="font-bold text-lg mb-4">Order Summary</h2>
-            <div className="space-y-3 text-sm max-h-52 overflow-y-auto pr-1">
-              {cart.items.map((it) => (
-                <div key={it.id} className="flex gap-3">
-                  <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden shrink-0">
-                    {it.productImage && <img src={it.productImage} alt="" className="w-full h-full object-cover" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate text-sm">{it.productName}</p>
-                    <p className="text-xs text-muted-foreground">Qty {it.quantity} · {it.color}</p>
-                  </div>
-                  <span className="font-semibold shrink-0">{formatINR(it.basePrice * it.quantity)}</span>
-                </div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold text-lg">Order Summary</h2>
+              <Link to="/cart" className="text-xs font-semibold text-primary hover:underline">Edit cart</Link>
+            </div>
+            <div className="max-h-80 overflow-y-auto pr-1 -mx-1">
+              {items.map((it) => (
+                <CartLineItem key={it.id} item={it} onUpdateQty={updateQty} onRemove={remove} compact />
               ))}
             </div>
             <div className="border-t mt-4 pt-4 space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatINR(cart.subtotal)}</span></div>
+              <div className="flex gap-2 mb-2">
+                <Input value={couponInput} onChange={(e) => setCouponInput(e.target.value.toUpperCase())} placeholder="Coupon code" className="h-9" />
+                <Button type="button" variant="outline" onClick={applyCoupon} className="shrink-0 font-semibold">Apply</Button>
+              </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-success"><span>Coupon ({couponCode})</span><span>-{formatINR(discount)}</span></div>
+              )}
+              <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatINR(subtotal)}</span></div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
                 <span>{shipping === 0 ? <span className="text-success font-semibold">FREE</span> : formatINR(shipping)}</span>

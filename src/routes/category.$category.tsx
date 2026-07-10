@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { ProductCard, type ProductCardData } from "@/components/product-card";
+import { PRODUCT_CARD_SELECT } from "@/lib/product-pricing";
 import { fetchCategoryBySlug } from "@/lib/categories";
 import { getCategoryImage } from "@/components/category-tile";
 import { ImmersiveReveal } from "@/components/animations/immersive-reveal";
@@ -23,7 +24,7 @@ function CategoryPage() {
       fetchCategoryBySlug(category),
       supabase
         .from("products")
-        .select("id,name,slug,base_price,images,category")
+        .select(PRODUCT_CARD_SELECT)
         .eq("active", true)
         .eq("category", category),
     ]).then(([cat, { data }]) => {

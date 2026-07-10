@@ -12,6 +12,7 @@ import { formatINR } from "@/lib/order-utils";
 import { STORE } from "@/lib/store-info";
 import { VARIANT_COLOR_LABEL, VARIANT_SIZE_LABEL } from "@/lib/gadget-labels";
 import { emiPerMonth } from "@/lib/product-specs";
+import { productMrp } from "@/lib/product-pricing";
 import { toast } from "sonner";
 import { ShoppingBag, Flash, ShieldTick, Truck, Heart, Element3, Star1 } from "iconsax-react";
 
@@ -23,13 +24,21 @@ interface Product {
   slug: string;
   description: string | null;
   base_price: number;
+  marketing_price?: number | null;
   specs: string | null;
   brand: string | null;
   warranty_months: number;
   images: string[] | null;
   category: string;
 }
-interface Variant { id: string; size: string; color: string; color_hex: string; stock: number }
+interface Variant {
+  id: string;
+  size: string;
+  color: string;
+  color_hex: string;
+  variant_image?: string | null;
+  stock: number;
+}
 
 function mockRating(slug: string) {
   const n = slug.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -54,7 +63,12 @@ function ProductPage() {
       if (p) {
         setProduct(p as Product);
         const { data: vs } = await supabase.from("product_variants").select("*").eq("product_id", p.id);
-        setVariants((vs as Variant[]) ?? []);
+        const loaded = (vs as Variant[]) ?? [];
+        setVariants(loaded);
+        if (loaded.length) {
+          setModel(loaded[0].size);
+          setColor(loaded[0].color);
+        }
       }
     })();
   }, [slug]);
@@ -62,13 +76,35 @@ function ProductPage() {
   const models = useMemo(() => Array.from(new Set(variants.map((v) => v.size))), [variants]);
   const colors = useMemo(() => {
     const seen = new Map<string, Variant>();
-    variants.forEach((v) => { if (!seen.has(v.color)) seen.set(v.color, v); });
+    variants.forEach((v) => {
+      if (model && v.size !== model) return;
+      if (!seen.has(v.color)) seen.set(v.color, v);
+    });
     return Array.from(seen.values());
-  }, [variants]);
+  }, [variants, model]);
   const selectedVariant = useMemo(
     () => variants.find((v) => v.size === model && v.color === color) ?? null,
     [variants, model, color],
   );
+
+  const displayImages = useMemo(() => {
+    const base = product?.images ?? [];
+    const variantImg = selectedVariant?.variant_image;
+    if (variantImg) return [variantImg, ...base.filter((u) => u !== variantImg)];
+    return base;
+  }, [product?.images, selectedVariant?.variant_image]);
+
+  useEffect(() => {
+    setImgIdx(0);
+  }, [selectedVariant?.id]);
+
+  useEffect(() => {
+    if (!model || !variants.length) return;
+    const forModel = variants.filter((v) => v.size === model);
+    if (!forModel.length) return;
+    if (color && forModel.some((v) => v.color === color)) return;
+    setColor(forModel[0].color);
+  }, [model, variants, color]);
 
   if (!product) return (
     <div className="min-h-screen flex flex-col bg-muted/20">
@@ -76,7 +112,7 @@ function ProductPage() {
     </div>
   );
 
-  const mrp = Math.round(product.base_price * 1.45);
+  const mrp = productMrp(product.base_price, product.marketing_price);
   const rating = mockRating(product.slug);
   const emi = emiPerMonth(product.base_price);
 
@@ -84,17 +120,16 @@ function ProductPage() {
     if (!model || !color) { toast.error(`Pick ${VARIANT_SIZE_LABEL.toLowerCase()} and color`); return; }
     if (selectedVariant && selectedVariant.stock <= 0) { toast.error("Out of stock"); return; }
     cart.add({
-      id: crypto.randomUUID(),
       productId: product.id,
       productName: product.name,
-      productImage: product.images?.[0] ?? "",
+      productImage: selectedVariant?.variant_image || product.images?.[0] || "",
       size: model, color,
       colorHex: selectedVariant?.color_hex ?? "#000",
       variantId: selectedVariant?.id ?? null,
       basePrice: product.base_price,
       quantity: 1,
     });
-    toast.success("Added to cart");
+    toast.success(buyNow ? "Added — opening cart" : "Added to cart ✓");
     if (buyNow) navigate({ to: "/cart" });
   };
 
@@ -131,14 +166,14 @@ function ProductPage() {
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
           <div className="premium-card p-4 md:p-6">
             <div className="aspect-square bg-gradient-to-br from-muted to-muted/30 rounded-xl overflow-hidden p-6">
-              {product.images?.[imgIdx] && (
-                <img src={product.images[imgIdx]} alt={product.name} className="w-full h-full object-contain drop-shadow-lg" />
+              {displayImages[imgIdx] && (
+                <img src={displayImages[imgIdx]} alt={product.name} className="w-full h-full object-contain drop-shadow-lg" />
               )}
             </div>
-            {(product.images?.length ?? 0) > 1 && (
+            {displayImages.length > 1 && (
               <div className="mt-4 flex gap-2 overflow-x-auto scrollbar-hide">
-                {product.images!.map((src, i) => (
-                  <button key={i} type="button" onClick={() => setImgIdx(i)}
+                {displayImages.map((src, i) => (
+                  <button key={src + i} type="button" onClick={() => setImgIdx(i)}
                     className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 p-1 bg-muted/30 ${i === imgIdx ? "border-primary" : "border-transparent"}`}>
                     <img src={src} alt="" className="w-full h-full object-contain" />
                   </button>
@@ -182,11 +217,27 @@ function ProductPage() {
 
             <div className="mt-6">
               <p className="text-sm font-bold uppercase mb-3">{VARIANT_COLOR_LABEL} {color && <span className="text-muted-foreground font-normal normal-case">— {color}</span>}</p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3">
                 {colors.map((c) => (
-                  <button key={c.color} type="button" onClick={() => setColor(c.color)} title={c.color}
-                    className={`w-11 h-11 rounded-full border-2 transition-all ${color === c.color ? "border-primary scale-110 ring-2 ring-primary/20" : "border-border"}`}
-                    style={{ backgroundColor: c.color_hex }} />
+                  <button
+                    key={c.color}
+                    type="button"
+                    onClick={() => setColor(c.color)}
+                    title={c.color}
+                    className={`flex flex-col items-center gap-1.5 transition-all ${color === c.color ? "opacity-100" : "opacity-80 hover:opacity-100"}`}
+                  >
+                    <span
+                      className={`w-12 h-12 rounded-full border-2 overflow-hidden flex items-center justify-center ${color === c.color ? "border-primary scale-105 ring-2 ring-primary/20" : "border-border"}`}
+                      style={c.variant_image ? undefined : { backgroundColor: c.color_hex }}
+                    >
+                      {c.variant_image ? (
+                        <img src={c.variant_image} alt={c.color} className="w-full h-full object-cover" />
+                      ) : null}
+                    </span>
+                    <span className={`text-[10px] font-semibold ${color === c.color ? "text-primary" : "text-muted-foreground"}`}>
+                      {c.color}
+                    </span>
+                  </button>
                 ))}
               </div>
             </div>
@@ -198,10 +249,10 @@ function ProductPage() {
             )}
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
-              <Button size="lg" className="flex-1 font-bold rounded-xl h-12" onClick={() => addToCart(false)}>
-                <ShoppingBag size={20} className="mr-2" /> Add to Cart
+              <Button size="lg" className="flex-1 font-bold rounded-xl h-12 shadow-sm" onClick={() => addToCart(false)}>
+                <ShoppingBag size={22} variant="Bold" className="mr-2" /> Add to Cart
               </Button>
-              <Button size="lg" variant="secondary" className="flex-1 font-bold rounded-xl h-12" onClick={() => addToCart(true)}>Buy Now</Button>
+              <Button size="lg" variant="secondary" className="flex-1 font-bold rounded-xl h-12" onClick={() => addToCart(true)}>Buy Now →</Button>
             </div>
 
             <div className="flex gap-2 mt-3">

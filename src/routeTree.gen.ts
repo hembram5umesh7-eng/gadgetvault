@@ -41,6 +41,8 @@ import { Route as AdminStaffRouteImport } from './routes/admin.staff'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminManufacturersRouteImport } from './routes/admin.manufacturers'
+import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
+import { Route as AdminCjSyncRouteImport } from './routes/admin.cj-sync'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
 import { Route as ApiWebhooksShippingRouteImport } from './routes/api.webhooks.shipping'
 
@@ -204,6 +206,16 @@ const AdminManufacturersRoute = AdminManufacturersRouteImport.update({
   path: '/manufacturers',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCouponsRoute = AdminCouponsRouteImport.update({
+  id: '/coupons',
+  path: '/coupons',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCjSyncRoute = AdminCjSyncRouteImport.update({
+  id: '/cj-sync',
+  path: '/cj-sync',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
@@ -238,6 +250,8 @@ export interface FileRoutesByFullPath {
   '/warranty': typeof WarrantyRoute
   '/wishlist': typeof WishlistRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/cj-sync': typeof AdminCjSyncRoute
+  '/admin/coupons': typeof AdminCouponsRoute
   '/admin/manufacturers': typeof AdminManufacturersRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -272,6 +286,8 @@ export interface FileRoutesByTo {
   '/warranty': typeof WarrantyRoute
   '/wishlist': typeof WishlistRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/cj-sync': typeof AdminCjSyncRoute
+  '/admin/coupons': typeof AdminCouponsRoute
   '/admin/manufacturers': typeof AdminManufacturersRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -309,6 +325,8 @@ export interface FileRoutesById {
   '/warranty': typeof WarrantyRoute
   '/wishlist': typeof WishlistRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/cj-sync': typeof AdminCjSyncRoute
+  '/admin/coupons': typeof AdminCouponsRoute
   '/admin/manufacturers': typeof AdminManufacturersRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -347,6 +365,8 @@ export interface FileRouteTypes {
     | '/warranty'
     | '/wishlist'
     | '/admin/categories'
+    | '/admin/cj-sync'
+    | '/admin/coupons'
     | '/admin/manufacturers'
     | '/admin/orders'
     | '/admin/products'
@@ -381,6 +401,8 @@ export interface FileRouteTypes {
     | '/warranty'
     | '/wishlist'
     | '/admin/categories'
+    | '/admin/cj-sync'
+    | '/admin/coupons'
     | '/admin/manufacturers'
     | '/admin/orders'
     | '/admin/products'
@@ -417,6 +439,8 @@ export interface FileRouteTypes {
     | '/warranty'
     | '/wishlist'
     | '/admin/categories'
+    | '/admin/cj-sync'
+    | '/admin/coupons'
     | '/admin/manufacturers'
     | '/admin/orders'
     | '/admin/products'
@@ -686,6 +710,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminManufacturersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/coupons': {
+      id: '/admin/coupons'
+      path: '/coupons'
+      fullPath: '/admin/coupons'
+      preLoaderRoute: typeof AdminCouponsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/cj-sync': {
+      id: '/admin/cj-sync'
+      path: '/cj-sync'
+      fullPath: '/admin/cj-sync'
+      preLoaderRoute: typeof AdminCjSyncRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/categories': {
       id: '/admin/categories'
       path: '/categories'
@@ -705,6 +743,8 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminCategoriesRoute: typeof AdminCategoriesRoute
+  AdminCjSyncRoute: typeof AdminCjSyncRoute
+  AdminCouponsRoute: typeof AdminCouponsRoute
   AdminManufacturersRoute: typeof AdminManufacturersRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminProductsRoute: typeof AdminProductsRoute
@@ -715,6 +755,8 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminCategoriesRoute: AdminCategoriesRoute,
+  AdminCjSyncRoute: AdminCjSyncRoute,
+  AdminCouponsRoute: AdminCouponsRoute,
   AdminManufacturersRoute: AdminManufacturersRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminProductsRoute: AdminProductsRoute,

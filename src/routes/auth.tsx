@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth-context";
 import { loginWithPassword, resolvePostLoginRedirect, rolesFromUser } from "@/lib/auth-session";
+import { registerCustomer } from "@/lib/auth.functions";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Lock, Mail, ShoppingBag, UserRound } from "lucide-react";
@@ -37,6 +38,7 @@ function redirectHint(path: string) {
 function AuthPage() {
   const { redirect, email: emailParam, tab: tabParam } = Route.useSearch();
   const { user, ready, roles } = useAuth();
+  const registerFn = useServerFn(registerCustomer);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -87,6 +89,9 @@ function AuthPage() {
             : err.message
           : "Login failed";
       toast.error(msg);
+      if (msg.includes("not verified") || msg.includes("Email not verified")) {
+        toast.info("Tip: Open Create Account with the same email to fix your account.", { duration: 6000 });
+      }
       setLoading(false);
     }
   };
@@ -108,32 +113,21 @@ function AuthPage() {
     if (!pv.success) return toast.error(pv.error.issues[0].message);
 
     setLoading(true);
-    const { data, error } = await supabase.auth.signUp({
-      email: signupEmail,
-      password: signupPassword,
-      options: { data: { full_name: fullName }, emailRedirectTo: `${window.location.origin}/` },
-    });
-
-    if (error) {
-      setLoading(false);
-      return toast.error(error.message);
-    }
-
-    if (data.session && data.user) {
-      toast.success("Account created!");
-      finishLogin(redirect, data.user);
-      return;
-    }
-
     try {
+      await registerFn({
+        data: {
+          email: signupEmail.trim(),
+          password: signupPassword,
+          fullName: fullName.trim() || "Customer",
+        },
+      });
       const loginData = await loginWithPassword(signupEmail.trim(), signupPassword);
-      toast.success("Account created!");
+      toast.success("Welcome to GadgetVault!");
       finishLogin(redirect, loginData.user);
-    } catch {
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Signup failed";
+      toast.error(msg);
       setLoading(false);
-      toast.success("Account created! Sign in with your email and password.");
-      setEmail(signupEmail);
-      setTab("login");
     }
   };
 

@@ -7,7 +7,7 @@ import { useCategories } from "@/lib/categories";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { PRODUCT_CARD_SELECT } from "@/lib/product-pricing";
 
 export const Route = createFileRoute("/search")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -35,7 +35,7 @@ function SearchPage() {
     setLoading(true);
     let query = supabase
       .from("products")
-      .select("id,name,slug,base_price,images,category,brand,is_bestseller,is_deal")
+      .select(PRODUCT_CARD_SELECT)
       .eq("active", true);
 
     if (q.trim()) query = query.or(`name.ilike.%${q}%,brand.ilike.%${q}%,category.ilike.%${q}%`);

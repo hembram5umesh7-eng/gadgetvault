@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { formatINR } from "@/lib/order-utils";
+import { productDiscountPercent, productMrp } from "@/lib/product-pricing";
 import { Flash } from "iconsax-react";
 
 export interface ProductCardData {
@@ -7,6 +8,7 @@ export interface ProductCardData {
   name: string;
   slug: string;
   base_price: number;
+  marketing_price?: number | null;
   images: string[] | null;
   category: string;
   brand?: string | null;
@@ -16,8 +18,8 @@ export interface ProductCardData {
 
 export function ProductCard({ p }: { p: ProductCardData }) {
   const img = p.images?.[0] ?? "";
-  const mrp = Math.round(p.base_price * 1.45);
-  const discount = Math.round((1 - p.base_price / mrp) * 100);
+  const mrp = productMrp(p.base_price, p.marketing_price);
+  const discount = productDiscountPercent(p.base_price, p.marketing_price);
 
   return (
     <Link
@@ -53,7 +55,9 @@ export function ProductCard({ p }: { p: ProductCardData }) {
         <h3 className="font-bold text-sm line-clamp-2 mt-1 leading-snug group-hover:text-primary transition-colors">{p.name}</h3>
         <div className="mt-auto pt-3 flex items-baseline gap-2">
           <span className="font-extrabold text-lg">{formatINR(p.base_price)}</span>
-          <span className="text-xs text-muted-foreground line-through">{formatINR(mrp)}</span>
+          {mrp > p.base_price && (
+            <span className="text-xs text-muted-foreground line-through">{formatINR(mrp)}</span>
+          )}
         </div>
         <p className="text-[10px] text-muted-foreground mt-0.5">incl. GST · EMI available</p>
       </div>

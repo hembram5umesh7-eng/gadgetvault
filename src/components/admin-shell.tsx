@@ -4,13 +4,15 @@ import { useAuth } from "@/lib/auth-context";
 import { syncSupabaseSession } from "@/lib/auth-session";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import {
-  LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Truck, ArrowLeft, UserCog,
+  LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Truck, ArrowLeft, UserCog, CloudDownload, Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { label: "Dashboard", to: "/admin", icon: LayoutDashboard, exact: true as const, superOnly: false },
   { label: "Products", to: "/admin/products", icon: Package, exact: false as const, superOnly: false },
+  { label: "CJ Import", to: "/admin/cj-sync", icon: CloudDownload, exact: false as const, superOnly: false },
+  { label: "Coupons", to: "/admin/coupons", icon: Tag, exact: false as const, superOnly: false },
   { label: "Categories", to: "/admin/categories", icon: FolderTree, exact: false as const, superOnly: false },
   { label: "Orders", to: "/admin/orders", icon: ShoppingCart, exact: false as const, superOnly: false },
   { label: "Suppliers", to: "/admin/manufacturers", icon: Truck, exact: false as const, superOnly: false },

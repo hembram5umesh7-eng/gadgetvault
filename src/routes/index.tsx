@@ -10,22 +10,22 @@ import { Button } from "@/components/ui/button";
 import { useCategories } from "@/lib/categories";
 import { ImmersiveReveal } from "@/components/animations/immersive-reveal";
 import { Hero3DSlider, type HeroSlide } from "@/components/animations/hero-3d-slider";
+import { PRODUCT_CARD_SELECT } from "@/lib/product-pricing";
 import { STORE_FAQ } from "@/lib/faq-data";
-import { Flash, Cpu, Headphone, FlashCircle, Watch, Category } from "iconsax-react";
+import { Flash, Cpu, FlashCircle, Category } from "iconsax-react";
 
 export const Route = createFileRoute("/")({ component: Home });
 
 const HERO_SLIDES: HeroSlide[] = [
-  { id: "1", title: "Pro TWS Earbuds X3", subtitle: "boAt · ANC · 40hr Battery", price: "From ₹2,499", image: "https://images.unsplash.com/photo-1590658268037-6bf9d7a3d96f?w=800&q=80", category: "audio", accent: "" },
-  { id: "2", title: "Smart Watch Pro S", subtitle: "Noise · AMOLED · GPS", price: "From ₹3,999", image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80", category: "smartwatches", accent: "" },
-  { id: "3", title: "65W GaN Fast Charger", subtitle: "Portronics · Dual Port", price: "From ₹1,899", image: "https://images.unsplash.com/photo-1583394838336-acd977736298?w=800&q=80", category: "chargers", accent: "" },
+  { id: "1", title: "Kitchen Essentials", subtitle: "Smart organizers & tools", price: "From ₹299", image: "https://images.unsplash.com/photo-1556911223-bff03130eb78?w=800&q=80", category: "kitchen-accessories", accent: "" },
+  { id: "2", title: "Unique Gadgets", subtitle: "Innovative finds for daily life", price: "Shop now", image: "https://images.unsplash.com/photo-1585819409453-0e95a44c0d34?w=800&q=80", category: "unique-gadgets", accent: "" },
+  { id: "3", title: "Daily Necessities", subtitle: "Must-haves at best prices", price: "Free ship ₹999+", image: "https://images.unsplash.com/photo-1585771724684-e3823f9ee8ef?w=800&q=80", category: "necessities", accent: "" },
 ];
 
 const QUICK_CATS = [
-  { icon: Headphone, label: "Audio", slug: "audio" },
-  { icon: FlashCircle, label: "Chargers", slug: "chargers" },
-  { icon: Watch, label: "Watches", slug: "smartwatches" },
-  { icon: Category, label: "Accessories", slug: "accessories" },
+  { icon: Category, label: "Kitchen", slug: "kitchen-accessories" },
+  { icon: Cpu, label: "Gadgets", slug: "unique-gadgets" },
+  { icon: FlashCircle, label: "Essentials", slug: "necessities" },
 ];
 
 function Home() {
@@ -33,7 +33,7 @@ function Home() {
   const [bestsellers, setBestsellers] = useState<ProductCardData[]>([]);
   const [deals, setDeals] = useState<ProductCardData[]>([]);
   const { categories } = useCategories();
-  const select = "id,name,slug,base_price,images,category,brand,is_bestseller,is_deal";
+  const select = PRODUCT_CARD_SELECT;
 
   useEffect(() => {
     Promise.all([
@@ -47,7 +47,7 @@ function Home() {
     });
   }, []);
 
-  const defaultCategory = categories[0]?.slug ?? "audio";
+  const defaultCategory = categories[0]?.slug ?? "kitchen-accessories";
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
