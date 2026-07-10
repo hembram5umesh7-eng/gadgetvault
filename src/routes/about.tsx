@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PolicyLayout, PolicySection } from "@/components/policy-layout";
-import { STORE, fullAddress } from "@/lib/store-info";
+import { STORE, fullAddress, hasGstin, hasPhone } from "@/lib/store-info";
 
 export const Route = createFileRoute("/about")({ component: AboutPage });
 
@@ -13,32 +13,32 @@ function AboutPage() {
     >
       <PolicySection title="Our Story">
         <p>
-          {STORE.name} was founded with a simple mission: make premium gadgets and accessories accessible to every Indian
-          at honest prices. We curate tech products from trusted suppliers, verify quality, and deliver them to your
-          doorstep with secure online payments powered by Razorpay.
+          {STORE.name} curates kitchen accessories, unique gadgets, and daily essentials for shoppers across India.
+          We list products from trusted suppliers, show clear pricing at checkout, and fulfil orders with secure
+          Razorpay payments.
         </p>
       </PolicySection>
       <PolicySection title="What We Sell">
         <p>
-          We offer a wide range of consumer electronics and accessories including wireless earbuds, smartwatches,
-          fast chargers, power banks, phone cases, USB hubs, and more — all sourced from verified manufacturers.
+          Our catalog focuses on three categories: Kitchen Accessories, Unique Gadgets, and Necessities.
+          Product details, images, and specifications come from the supplier listing shown on each product page.
         </p>
       </PolicySection>
       <PolicySection title="Our Values">
         <ul className="list-disc pl-5 space-y-1">
-          <li><strong>Genuine Products</strong> — 100% authentic items from authorized suppliers</li>
-          <li><strong>Transparent Pricing</strong> — All prices include applicable taxes; no hidden charges at checkout</li>
+          <li><strong>Honest Listings</strong> — We show supplier-provided product information without fake reviews or ratings</li>
+          <li><strong>Transparent Pricing</strong> — Prices include applicable taxes; shipping rules are stated at checkout</li>
           <li><strong>Secure Payments</strong> — Razorpay-powered checkout with UPI, cards, netbanking & wallets</li>
-          <li><strong>Fast Delivery</strong> — Pan-India shipping via trusted courier partners</li>
+          <li><strong>Reliable Delivery</strong> — Pan-India shipping via courier partners</li>
         </ul>
       </PolicySection>
       <PolicySection title="Registered Business">
         <p>
           <strong>{STORE.legalName}</strong><br />
-          {fullAddress()}<br />
+          {fullAddress() && (<>{fullAddress()}<br /></>)}
           Email: {STORE.email}<br />
-          Phone: {STORE.phone}<br />
-          GSTIN: {STORE.gstin}
+          {hasPhone() && <>Phone: {STORE.phone}<br /></>}
+          {hasGstin() && <>GSTIN: {STORE.gstin}</>}
         </p>
       </PolicySection>
     </PolicyLayout>

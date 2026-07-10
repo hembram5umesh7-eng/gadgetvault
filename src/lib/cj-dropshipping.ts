@@ -20,6 +20,11 @@ export interface CJProductVariant {
   stock: number;
 }
 
+export interface CJProductProperty {
+  key: string;
+  value: string;
+}
+
 export interface CJProductDetail {
   pid: string;
   nameEn: string;
@@ -28,6 +33,39 @@ export interface CJProductDetail {
   description: string;
   images: string[];
   variants: CJProductVariant[];
+  properties: CJProductProperty[];
+}
+
+export function buildSpecsString(parts: { key: string; value: string }[]): string {
+  return parts
+    .filter((p) => p.key && p.value)
+    .map((p) => `${p.key}: ${p.value}`)
+    .join(" · ");
+}
+
+function extractCJProperties(raw: Record<string, unknown>): CJProductProperty[] {
+  const rows: CJProductProperty[] = [];
+  const props = raw.productProperty ?? raw.productProperties ?? raw.properties;
+  if (Array.isArray(props)) {
+    for (const p of props) {
+      const item = p as Record<string, unknown>;
+      const key = String(item.name ?? item.propertyName ?? item.key ?? "").trim();
+      const value = String(item.value ?? item.propertyValue ?? "").trim();
+      if (key && value) rows.push({ key, value });
+    }
+  }
+  const extras: [string, unknown][] = [
+    ["Weight", raw.productWeight],
+    ["Pack weight", raw.packWeight],
+    ["Material", raw.materialNameEn ?? raw.materialName],
+    ["Product type", raw.productTypeNameEn ?? raw.productTypeName],
+    ["Category", raw.categoryName ?? raw.threeCategoryName],
+  ];
+  for (const [key, val] of extras) {
+    const value = String(val ?? "").trim();
+    if (value) rows.push({ key, value });
+  }
+  return rows;
 }
 
 export function cjConfigured() {
@@ -123,14 +161,17 @@ export function mapProductDetail(raw: Record<string, unknown>): CJProductDetail 
       ? [String(raw.bigImage)]
       : [];
 
+  const properties = extractCJProperties(raw);
+
   return {
     pid: String(raw.pid ?? raw.id ?? ""),
     nameEn: String(raw.productNameEn ?? raw.nameEn ?? "CJ Product"),
     sku: String(raw.productSku ?? raw.sku ?? ""),
     sellPriceUsd: Number(raw.sellPrice ?? 0),
-    description: String(raw.description ?? "").slice(0, 2000),
+    description: String(raw.description ?? "").slice(0, 8000),
     images,
     variants: variants.length ? variants : [],
+    properties,
   };
 }
 

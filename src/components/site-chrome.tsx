@@ -9,7 +9,7 @@ import { useCart } from "@/lib/cart-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import { useCompare } from "@/lib/compare-context";
 import { useCategories } from "@/lib/categories";
-import { POLICY_LINKS, STORE, fullAddress } from "@/lib/store-info";
+import { POLICY_LINKS, STORE, fullAddress, hasGstin, hasPhone } from "@/lib/store-info";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -49,7 +49,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/95 backdrop-blur-xl shadow-sm">
       <div className="bg-gradient-promo text-white text-xs font-medium text-center py-2 px-4 tracking-wide">
-        Free shipping ₹{STORE.freeShippingMin}+ · Secure Razorpay payments · 100% Genuine products
+        Free shipping on orders ₹{STORE.freeShippingMin}+ · Secure Razorpay checkout · Pan-India delivery
       </div>
 
       <div className="container mx-auto flex h-[4.25rem] items-center gap-2 sm:gap-3 px-4">
@@ -198,9 +198,9 @@ export function SiteFooter() {
         <div className="container mx-auto px-4 py-8 grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
             { icon: ShieldCheck, title: "Secure Payments", desc: "Razorpay encrypted checkout" },
-            { icon: Truck, title: "Fast Delivery", desc: `Pan-India ${STORE.deliveryDays}` },
-            { icon: Cpu, title: "Genuine Products", desc: "Verified suppliers only" },
-            { icon: Phone, title: "24/7 Support", desc: STORE.phone },
+            { icon: Truck, title: "Delivery", desc: `Estimated ${STORE.deliveryDays} pan-India` },
+            { icon: Cpu, title: "Listed Products", desc: "Details from supplier catalog" },
+            { icon: Mail, title: "Support", desc: STORE.email },
           ].map((b) => (
             <div key={b.title} className="flex gap-3 items-start">
               <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -226,7 +226,9 @@ export function SiteFooter() {
           </p>
           <div className="mt-4 space-y-1.5 text-sm text-muted-foreground">
             <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-primary" /> {STORE.email}</p>
-            <p className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /> {STORE.phone}</p>
+            {hasPhone() && (
+              <p className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /> {STORE.phone}</p>
+            )}
           </div>
         </div>
 
@@ -267,16 +269,21 @@ export function SiteFooter() {
 
       <div className="border-t border-border/50 py-5">
         <div className="container mx-auto px-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} {STORE.legalName}. All rights reserved. · GSTIN: {STORE.gstin}</p>
+          <p>
+            © {new Date().getFullYear()} {STORE.legalName}. All rights reserved.
+            {hasGstin() ? ` · GSTIN: ${STORE.gstin}` : ""}
+          </p>
           <div className="flex flex-wrap gap-x-4 gap-y-1">
             {POLICY_LINKS.map((l) => (
               <Link key={l.to} to={l.to} className="hover:text-primary transition-colors">{l.label}</Link>
             ))}
           </div>
         </div>
-        <p className="container mx-auto px-4 mt-2 text-[11px] text-muted-foreground/80">
-          {fullAddress()}
-        </p>
+        {fullAddress() && (
+          <p className="container mx-auto px-4 mt-2 text-[11px] text-muted-foreground/80">
+            {fullAddress()}
+          </p>
+        )}
       </div>
     </footer>
   );

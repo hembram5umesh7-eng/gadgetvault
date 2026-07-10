@@ -59,7 +59,7 @@ export function ProductCard({ p }: { p: ProductCardData }) {
             <span className="text-xs text-muted-foreground line-through">{formatINR(mrp)}</span>
           )}
         </div>
-        <p className="text-[10px] text-muted-foreground mt-0.5">incl. GST · EMI available</p>
+        <p className="text-[10px] text-muted-foreground mt-0.5">incl. GST</p>
       </div>
     </Link>
   );

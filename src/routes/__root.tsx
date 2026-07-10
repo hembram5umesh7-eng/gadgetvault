@@ -5,6 +5,7 @@ import { CartProvider } from "@/lib/cart-context";
 import { WishlistProvider } from "@/lib/wishlist-context";
 import { CompareProvider } from "@/lib/compare-context";
 import { Toaster } from "@/components/ui/sonner";
+import { SiteVisitTracker } from "@/components/site-visit-tracker";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -48,6 +49,7 @@ function RootComponent() {
         <WishlistProvider>
           <CompareProvider>
             <Outlet />
+            <SiteVisitTracker />
             <Toaster position="top-center" richColors />
           </CompareProvider>
         </WishlistProvider>

@@ -20,6 +20,21 @@ export function parseSpecs(specs: string | null | undefined): SpecRow[] {
     });
 }
 
+export function mergeProductSpecs(
+  stored: string | null | undefined,
+  extras: SpecRow[],
+): SpecRow[] {
+  const base = parseSpecs(stored);
+  const seen = new Set(base.map((r) => r.key.toLowerCase()));
+  const merged = [...base];
+  for (const row of extras) {
+    if (!row.value?.trim() || seen.has(row.key.toLowerCase())) continue;
+    seen.add(row.key.toLowerCase());
+    merged.push(row);
+  }
+  return merged;
+}
+
 export function emiPerMonth(price: number, months = 6): number {
   return Math.ceil(price / months);
 }

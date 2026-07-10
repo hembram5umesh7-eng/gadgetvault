@@ -60,13 +60,13 @@ function Home() {
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
               <div className="order-2 lg:order-1">
                 <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider">
-                  <Cpu size={14} color="#fff" variant="Bold" /> India&apos;s #1 Gadget Destination
+                  <Cpu size={14} color="#fff" variant="Bold" /> Kitchen · Gadgets · Essentials
                 </span>
                 <h1 className="mt-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-[1.1]">
                   Smart Gadgets.<br />Best Prices.<br />Zero Compromise.
                 </h1>
                 <p className="mt-4 text-base md:text-lg text-white/90 max-w-lg">
-                  Earbuds, smartwatches, chargers, power banks & accessories — 100% genuine with official warranty.
+                  Kitchen accessories, unique gadgets, and daily essentials — secure checkout and delivery across India.
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 font-bold rounded-xl">

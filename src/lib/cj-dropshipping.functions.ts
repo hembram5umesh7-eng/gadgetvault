@@ -11,6 +11,7 @@ import {
   parseCJResponse,
   slugifyCJ,
   splitVariantKey,
+  buildSpecsString,
   type CJListProduct,
 } from "@/lib/cj-dropshipping";
 import { colorNameToHex } from "@/lib/color-utils";
@@ -206,17 +207,24 @@ export const importCJProducts = createServerFn({ method: "POST" })
           ]),
         ].slice(0, 12);
 
+        const specParts = [
+          { key: "CJ SKU", value: detail.sku },
+          { key: "Fulfillment", value: "CJ Dropshipping" },
+          ...detail.properties,
+        ];
+        const specs = buildSpecsString(specParts) || `CJ SKU: ${detail.sku}`;
+
         const { data: product, error: pErr } = await supabaseAdmin
           .from("products")
           .insert({
             name: detail.nameEn,
             slug,
             category: data.categorySlug,
-            description: detail.description || `${detail.nameEn} — dropshipped via CJ, official import.`,
+            description: detail.description || detail.nameEn,
             base_price: priceInr,
             marketing_price: marketingInr,
             brand: "CJ Dropshipping",
-            specs: `CJ SKU: ${detail.sku} · Source: CJ Dropshipping · Auto-fulfill on order`,
+            specs,
             warranty_months: 6,
             is_bestseller: false,
             is_deal: false,

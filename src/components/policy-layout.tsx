@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { ImmersiveReveal } from "@/components/animations/immersive-reveal";
-import { POLICY_LINKS, STORE } from "@/lib/store-info";
+import { POLICY_LINKS, STORE, fullAddress, hasGstin, hasPhone } from "@/lib/store-info";
 import { ArrowLeft2 } from "iconsax-react";
 
 interface PolicyLayoutProps {
@@ -50,9 +50,10 @@ export function PolicyLayout({ title, subtitle, lastUpdated, children }: PolicyL
             <div className="premium-card p-5 text-sm">
               <h3 className="font-bold mb-2">{STORE.legalName}</h3>
               <p className="text-muted-foreground leading-relaxed">
-                {STORE.email}<br />
-                {STORE.phone}<br />
-                GSTIN: {STORE.gstin}
+                {STORE.email}
+                {hasPhone() && (<><br />{STORE.phone}</>)}
+                {hasGstin() && (<><br />GSTIN: {STORE.gstin}</>)}
+                {fullAddress() && (<><br />{fullAddress()}</>)}
               </p>
             </div>
           </aside>

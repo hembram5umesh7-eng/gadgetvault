@@ -1,8 +1,18 @@
-import { parseSpecs } from "@/lib/product-specs";
+import { mergeProductSpecs, type SpecRow } from "@/lib/product-specs";
 
-export function ProductSpecsTable({ specs }: { specs: string | null | undefined }) {
-  const rows = parseSpecs(specs);
-  if (!rows.length) return null;
+export function ProductSpecsTable({
+  specs,
+  extraRows = [],
+  emptyText = "Specifications are not available for this product yet.",
+}: {
+  specs: string | null | undefined;
+  extraRows?: SpecRow[];
+  emptyText?: string;
+}) {
+  const rows = mergeProductSpecs(specs, extraRows);
+  if (!rows.length) {
+    return <p className="text-sm text-muted-foreground">{emptyText}</p>;
+  }
 
   return (
     <div className="overflow-hidden rounded-xl border">

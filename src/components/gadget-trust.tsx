@@ -2,10 +2,10 @@ import { ShieldTick, Truck, Cpu, Card } from "iconsax-react";
 import { STORE } from "@/lib/store-info";
 
 const ITEMS = [
-  { icon: ShieldTick, title: "100% Genuine", desc: "Verified suppliers only" },
-  { icon: Cpu, title: "Official Warranty", desc: "Up to 24 months" },
-  { icon: Truck, title: "Fast Delivery", desc: `${STORE.deliveryDays} pan-India` },
-  { icon: Card, title: "Secure Pay", desc: "Razorpay · UPI · COD" },
+  { icon: ShieldTick, title: "Secure Checkout", desc: "Razorpay · UPI · Cards" },
+  { icon: Cpu, title: "Product Warranty", desc: "As listed on each product" },
+  { icon: Truck, title: "Pan-India Delivery", desc: `Est. ${STORE.deliveryDays}` },
+  { icon: Card, title: "Transparent Pricing", desc: "Taxes included at checkout" },
 ] as const;
 
 export function TrustBar({ className = "" }: { className?: string }) {

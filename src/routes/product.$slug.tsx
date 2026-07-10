@@ -5,16 +5,16 @@ import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductSpecsTable } from "@/components/product-specs-table";
+import { ProductHtmlContent } from "@/components/product-html-content";
 import { useCart } from "@/lib/cart-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import { useCompare } from "@/lib/compare-context";
 import { formatINR } from "@/lib/order-utils";
 import { STORE } from "@/lib/store-info";
 import { VARIANT_COLOR_LABEL, VARIANT_SIZE_LABEL } from "@/lib/gadget-labels";
-import { emiPerMonth } from "@/lib/product-specs";
 import { productMrp } from "@/lib/product-pricing";
 import { toast } from "sonner";
-import { ShoppingBag, Flash, ShieldTick, Truck, Heart, Element3, Star1 } from "iconsax-react";
+import { ShoppingBag, Flash, ShieldTick, Truck, Heart, Element3 } from "iconsax-react";
 
 export const Route = createFileRoute("/product/$slug")({ component: ProductPage });
 
@@ -38,11 +38,6 @@ interface Variant {
   color_hex: string;
   variant_image?: string | null;
   stock: number;
-}
-
-function mockRating(slug: string) {
-  const n = slug.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-  return (4 + (n % 10) / 10).toFixed(1);
 }
 
 function ProductPage() {
@@ -87,6 +82,18 @@ function ProductPage() {
     [variants, model, color],
   );
 
+  const specExtras = useMemo(() => {
+    if (!product) return [];
+    const rows = [
+      product.brand ? { key: "Brand", value: product.brand } : null,
+      { key: "Category", value: product.category.replace(/-/g, " ") },
+      model ? { key: VARIANT_SIZE_LABEL, value: model } : null,
+      color ? { key: VARIANT_COLOR_LABEL, value: color } : null,
+      selectedVariant ? { key: "Stock", value: String(selectedVariant.stock) } : null,
+    ];
+    return rows.filter(Boolean) as { key: string; value: string }[];
+  }, [product, model, color, selectedVariant]);
+
   const displayImages = useMemo(() => {
     const base = product?.images ?? [];
     const variantImg = selectedVariant?.variant_image;
@@ -113,8 +120,7 @@ function ProductPage() {
   );
 
   const mrp = productMrp(product.base_price, product.marketing_price);
-  const rating = mockRating(product.slug);
-  const emi = emiPerMonth(product.base_price);
+  const discount = mrp > product.base_price ? Math.round((1 - product.base_price / mrp) * 100) : 0;
 
   const addToCart = (buyNow = false) => {
     if (!model || !color) { toast.error(`Pick ${VARIANT_SIZE_LABEL.toLowerCase()} and color`); return; }
@@ -187,21 +193,24 @@ function ProductPage() {
             <p className="text-xs uppercase tracking-[0.15em] text-muted-foreground font-semibold mt-1">{product.category.replace(/-/g, " ")}</p>
             <h1 className="text-2xl md:text-3xl font-extrabold mt-2 leading-tight">{product.name}</h1>
 
-            <div className="flex items-center gap-2 mt-3">
-              <div className="flex items-center gap-1 text-sm font-bold text-amber-600">
-                <Star1 size={16} variant="Bold" /> {rating}
-              </div>
-              <span className="text-xs text-muted-foreground">· Genuine product · {product.warranty_months}mo warranty</span>
-            </div>
+            {product.warranty_months > 0 && (
+              <p className="text-xs text-muted-foreground mt-3">
+                {product.warranty_months} month warranty as listed · See warranty tab for details
+              </p>
+            )}
 
             <div className="mt-4 flex items-baseline gap-3 flex-wrap">
               <span className="text-3xl font-extrabold">{formatINR(product.base_price)}</span>
-              <span className="text-lg text-muted-foreground line-through">{formatINR(mrp)}</span>
-              <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-lg flex items-center gap-1">
-                <Flash size={12} variant="Bold" /> {Math.round((1 - product.base_price / mrp) * 100)}% OFF
-              </span>
+              {discount > 0 && (
+                <>
+                  <span className="text-lg text-muted-foreground line-through">{formatINR(mrp)}</span>
+                  <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-lg flex items-center gap-1">
+                    <Flash size={12} variant="Bold" /> {discount}% OFF
+                  </span>
+                </>
+              )}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">incl. GST · No Cost EMI from {formatINR(emi)}/mo*</p>
+            <p className="text-xs text-muted-foreground mt-1">Price inclusive of applicable taxes</p>
 
             <div className="mt-6">
               <p className="text-sm font-bold uppercase mb-3">{VARIANT_SIZE_LABEL}</p>
@@ -234,7 +243,7 @@ function ProductPage() {
                         <img src={c.variant_image} alt={c.color} className="w-full h-full object-cover" />
                       ) : null}
                     </span>
-                    <span className={`text-[10px] font-semibold ${color === c.color ? "text-primary" : "text-muted-foreground"}`}>
+                    <span className={`text-[10px] font-semibold max-w-[4.5rem] truncate ${color === c.color ? "text-primary" : "text-muted-foreground"}`}>
                       {c.color}
                     </span>
                   </button>
@@ -266,13 +275,15 @@ function ProductPage() {
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-3 text-xs">
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/40">
-                <ShieldTick size={18} className="text-success shrink-0" variant="Bold" />
-                <span>{product.warranty_months} months warranty</span>
-              </div>
+              {product.warranty_months > 0 && (
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/40">
+                  <ShieldTick size={18} className="text-success shrink-0" variant="Bold" />
+                  <span>{product.warranty_months} months warranty</span>
+                </div>
+              )}
               <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/40">
                 <Truck size={18} className="text-primary shrink-0" variant="Bold" />
-                <span>Free ship ₹{STORE.freeShippingMin}+</span>
+                <span>Free shipping on orders ₹{STORE.freeShippingMin}+</span>
               </div>
             </div>
           </div>
@@ -286,25 +297,29 @@ function ProductPage() {
               <TabsTrigger value="warranty" className="rounded-lg">Warranty</TabsTrigger>
               <TabsTrigger value="reviews" className="rounded-lg">Reviews</TabsTrigger>
             </TabsList>
-            <TabsContent value="overview" className="mt-6 text-sm text-muted-foreground leading-relaxed">
-              {product.description ?? "Premium gadget from verified supplier."}
+            <TabsContent value="overview" className="mt-6">
+              <ProductHtmlContent html={product.description} />
             </TabsContent>
             <TabsContent value="specs" className="mt-6">
-              <ProductSpecsTable specs={product.specs} />
+              <ProductSpecsTable specs={product.specs} extraRows={specExtras} />
             </TabsContent>
             <TabsContent value="warranty" className="mt-6 text-sm text-muted-foreground leading-relaxed">
-              <p>This product includes <strong>{product.warranty_months} months</strong> manufacturer warranty.</p>
-              <p className="mt-2">See full <Link to="/warranty" className="text-primary font-medium">Warranty Policy</Link> and <Link to="/refund" className="text-primary font-medium">Refund Policy</Link>.</p>
+              {product.warranty_months > 0 ? (
+                <>
+                  <p>This listing includes <strong>{product.warranty_months} months</strong> warranty where applicable.</p>
+                  <p className="mt-2">See our <Link to="/warranty" className="text-primary font-medium">Warranty Policy</Link> and <Link to="/refund" className="text-primary font-medium">Refund Policy</Link> for full terms.</p>
+                </>
+              ) : (
+                <p>Warranty details for this product are not listed. Contact {STORE.email} before purchase if you need warranty information.</p>
+              )}
             </TabsContent>
             <TabsContent value="reviews" className="mt-6">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-3xl font-extrabold">{rating}</span>
-                <div>
-                  <div className="flex text-amber-500"><Star1 size={16} variant="Bold" /><Star1 size={16} variant="Bold" /><Star1 size={16} variant="Bold" /><Star1 size={16} variant="Bold" /><Star1 size={16} /></div>
-                  <p className="text-xs text-muted-foreground">Based on verified purchases</p>
-                </div>
+              <div className="rounded-xl border border-dashed p-8 text-center">
+                <p className="font-semibold text-foreground">No customer reviews yet</p>
+                <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
+                  Reviews will appear here after verified purchases. We only show real feedback from customers who bought this product.
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground italic">&quot;Great value for money. Fast delivery and genuine product.&quot; — Verified Buyer</p>
             </TabsContent>
           </Tabs>
         </div>
