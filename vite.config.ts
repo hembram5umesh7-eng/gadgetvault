@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@": `${process.cwd()}/src`,
-        "@launch-template": path.resolve(process.cwd(), "../../launch-countdown-template/src"),
+        "@launch-template": path.resolve(process.cwd(), "src/launch-template"),
         "lucide-react": path.resolve(process.cwd(), "node_modules/lucide-react"),
         gsap: path.resolve(process.cwd(), "node_modules/gsap"),
       },
@@ -36,9 +36,6 @@ export default defineConfig(({ mode }) => {
       host: true,
       port: 8080,
       strictPort: true,
-      fs: {
-        allow: [path.resolve(process.cwd(), "../..")],
-      },
     },
     optimizeDeps: {
       // Avoid stale pre-bundled deps causing 504 "Outdated Optimize Dep" in dev.

@@ -1,6 +1,6 @@
 @import "tailwindcss" source(none);
 @source "../src";
-@source "../../../launch-countdown-template/src";
+@source "./src/launch-template";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));

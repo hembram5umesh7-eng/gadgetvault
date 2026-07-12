@@ -22,7 +22,7 @@
     "noUncheckedSideEffectImports": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@launch-template/*": ["../../launch-countdown-template/src/*"]
+      "@launch-template/*": ["./src/launch-template/*"]
     }
   }
 }
