@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { PolicyLayout, PolicySection } from "@/components/policy-layout";
 import { STORE } from "@/lib/store-info";
+import { LEGAL_LAST_UPDATED, contactBlock } from "@/lib/legal-copy";
 
 export const Route = createFileRoute("/privacy")({ component: PrivacyPage });
 
@@ -8,65 +9,60 @@ function PrivacyPage() {
   return (
     <PolicyLayout
       title="Privacy Policy"
-      subtitle="How we collect, use, and protect your personal information."
-      lastUpdated="July 4, 2026"
+      subtitle="How we collect, use, store, and protect your data."
+      lastUpdated={LEGAL_LAST_UPDATED}
     >
       <PolicySection title="1. Introduction">
         <p>
-          {STORE.legalName} (&quot;{STORE.name}&quot;, &quot;we&quot;, &quot;us&quot;) operates {STORE.name.toLowerCase()}.in.
-          This Privacy Policy explains how we handle your data when you browse, register, or purchase on our platform.
+          {STORE.legalName} (&quot;{STORE.name}&quot;) operates this e-commerce platform. This policy complies with the
+          Information Technology Act, 2000 and applicable rules.
         </p>
       </PolicySection>
-      <PolicySection title="2. Information We Collect">
+
+      <PolicySection title="2. Data We Collect">
         <ul className="list-disc pl-5 space-y-1">
-          <li><strong>Account data:</strong> name, email, phone number when you register</li>
-          <li><strong>Order data:</strong> shipping address, order history, payment status</li>
-          <li><strong>Payment data:</strong> processed securely by Razorpay; we do not store card/UPI details</li>
-          <li><strong>Technical data:</strong> IP address, browser type, device info for security and analytics</li>
+          <li><strong>Account:</strong> name, email, phone</li>
+          <li><strong>Orders:</strong> shipping address, order history, payment status</li>
+          <li><strong>Payment:</strong> processed by Razorpay — we do not store card/UPI credentials</li>
+          <li><strong>Technical:</strong> IP, browser, session data for security and analytics</li>
         </ul>
       </PolicySection>
-      <PolicySection title="3. How We Use Your Information">
+
+      <PolicySection title="3. How We Use Data">
         <ul className="list-disc pl-5 space-y-1">
-          <li>Process and fulfil your orders</li>
-          <li>Send order confirmations and shipping updates</li>
-          <li>Provide customer support</li>
-          <li>Prevent fraud and ensure platform security</li>
-          <li>Comply with legal obligations under Indian law</li>
+          <li>Fulfil orders and communicate status</li>
+          <li>Customer support and dispute resolution</li>
+          <li>Fraud prevention and legal compliance</li>
+          <li>Anonymous visit analytics (no sale of personal data)</li>
         </ul>
       </PolicySection>
-      <PolicySection title="4. Payment Processing">
+
+      <PolicySection title="4. Data Sharing">
+        <p>We share data only with processors required to operate:</p>
+        <ul className="list-disc pl-5 space-y-1 mt-2">
+          <li><strong>Razorpay</strong> — payments</li>
+          <li><strong>Courier / Shiprocket</strong> — delivery</li>
+          <li><strong>CJ Dropshipping & suppliers</strong> — order fulfilment (name, address, phone, product SKU)</li>
+          <li><strong>Supabase / cloud hosting</strong> — secure storage</li>
+        </ul>
+        <p className="mt-2">We do not sell your personal data.</p>
+      </PolicySection>
+
+      <PolicySection title="5. Retention">
+        <p>Order records retained minimum 7 years for tax/legal compliance. Account data until deletion request.</p>
+      </PolicySection>
+
+      <PolicySection title="6. Your Rights">
         <p>
-          Online payments are processed by Razorpay Software Private Limited, a PCI-DSS compliant payment gateway.
-          Your payment information is transmitted directly to Razorpay and is subject to{" "}
-          <a href="https://razorpay.com/privacy/" target="_blank" rel="noopener noreferrer" className="text-primary">
-            Razorpay&apos;s Privacy Policy
-          </a>.
+          Request access, correction, or deletion:{" "}
+          <a href={`mailto:${STORE.email}`} className="text-primary">{STORE.email}</a> — response within 30 days.
         </p>
       </PolicySection>
-      <PolicySection title="5. Data Sharing">
+
+      <PolicySection title="7. Grievance Officer">
         <p>
-          We share data only with service providers necessary to operate our store: payment processors (Razorpay),
-          shipping partners (Shiprocket/courier services), and cloud infrastructure (Supabase). We do not sell your
-          personal data to third parties.
-        </p>
-      </PolicySection>
-      <PolicySection title="6. Data Retention">
-        <p>
-          We retain order and account data for as long as your account is active and as required by tax and accounting
-          laws (minimum 7 years for transaction records under Indian regulations).
-        </p>
-      </PolicySection>
-      <PolicySection title="7. Your Rights">
-        <p>
-          You may request access, correction, or deletion of your personal data by emailing{" "}
-          <a href={`mailto:${STORE.email}`} className="text-primary">{STORE.email}</a>. We will respond within 30 days.
-        </p>
-      </PolicySection>
-      <PolicySection title="8. Contact">
-        <p>
-          Data Protection Officer / Grievance Officer: {STORE.legalName}<br />
-          Email: {STORE.email}<br />
-          Phone: {STORE.phone}
+          {contactBlock()} · See also{" "}
+          <Link to="/grievance" className="text-primary">Grievance Redressal</Link>
         </p>
       </PolicySection>
     </PolicyLayout>

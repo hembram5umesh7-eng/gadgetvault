@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { PolicyLayout, PolicySection } from "@/components/policy-layout";
 import { STORE } from "@/lib/store-info";
+import { DELIVERY_ESTIMATES, LEGAL_LAST_UPDATED, contactBlock } from "@/lib/legal-copy";
 
 export const Route = createFileRoute("/refund")({ component: RefundPage });
 
@@ -8,67 +9,69 @@ function RefundPage() {
   return (
     <PolicyLayout
       title="Refund & Cancellation Policy"
-      subtitle="Our policy on order cancellations, returns, and refunds."
-      lastUpdated="July 4, 2026"
+      subtitle="When you can cancel, return, or get a refund — including dropshipped orders."
+      lastUpdated={LEGAL_LAST_UPDATED}
     >
       <PolicySection title="1. Overview">
         <p>
-          At {STORE.name}, customer satisfaction is important to us. This policy outlines when you can cancel an order,
-          request a return, or receive a refund. Please read carefully before purchasing.
+          This policy applies to all {STORE.name} orders, including those fulfilled via dropshipping partners.
+          Delivery delays within our stated estimates ({DELIVERY_ESTIMATES.totalTypical}) alone do not automatically qualify for a refund.
         </p>
       </PolicySection>
-      <PolicySection title="2. Order Cancellation">
+
+      <PolicySection title="2. Cancellation Before Dispatch">
         <ul className="list-disc pl-5 space-y-1">
-          <li>
-            <strong>Before dispatch:</strong> You may cancel your order by contacting {STORE.email} with your order
-            number. Full refund will be processed within 5–7 business days for prepaid orders.
-          </li>
-          <li>
-            <strong>After dispatch:</strong> Cancellation is not possible once the order has been shipped. You may
-            refuse delivery, but return shipping costs may be deducted from your refund.
-          </li>
-          <li>COD orders cancelled before dispatch incur no charge.</li>
+          <li>Cancel via <Link to="/orders" className="text-primary">My Orders</Link> or email {STORE.email} with order number</li>
+          <li>If not yet dispatched to courier, full refund for prepaid orders within 5–7 business days</li>
+          <li>Once handed to supplier for dispatch, cancellation may not be possible</li>
         </ul>
       </PolicySection>
-      <PolicySection title="3. Return Eligibility">
-        <p>Returns are accepted only in the following cases:</p>
-        <ul className="list-disc pl-5 space-y-1 mt-2">
-          <li>Product received is damaged or defective (report within 48 hours with photos)</li>
-          <li>Wrong product delivered (report within 48 hours of delivery)</li>
-          <li>Product is unused, in original packaging with all accessories and tags intact</li>
+
+      <PolicySection title="3. Cancellation After Dispatch">
+        <p>
+          You may refuse delivery in some cases; return shipping and restocking costs may be deducted. Contact us before refusing.
+        </p>
+      </PolicySection>
+
+      <PolicySection title="4. Return Eligibility">
+        <ul className="list-disc pl-5 space-y-1">
+          <li>Damaged or defective — report within <strong>48 hours</strong> with photos/video</li>
+          <li>Wrong item shipped — report within 48 hours</li>
+          <li>Unused, original packaging with tags (where applicable)</li>
         </ul>
         <p className="mt-2">
-          <strong>Non-returnable items:</strong> Opened earphones/headphones (hygiene), software licenses, personalized
-          items, and products marked as non-returnable on the product page.
+          <strong>Non-returnable:</strong> Hygiene-sealed items once opened, personalized goods, items marked non-returnable on product page,
+          and damage from misuse.
         </p>
       </PolicySection>
-      <PolicySection title="4. Return Process">
-        <ol className="list-decimal pl-5 space-y-1">
-          <li>Email {STORE.email} with order number, reason, and photos (if damaged/defective)</li>
-          <li>Our team will approve or reject within 2 business days</li>
-          <li>On approval, arrange pickup or ship to our return address (details provided via email)</li>
-          <li>Inspection within 3 business days of receiving the return</li>
-        </ol>
-      </PolicySection>
-      <PolicySection title="5. Refund Timeline">
-        <ul className="list-disc pl-5 space-y-1">
-          <li><strong>Prepaid (Razorpay):</strong> Refund to original payment method within 5–7 business days after inspection</li>
-          <li><strong>COD:</strong> Refund via bank transfer (NEFT/UPI) within 7–10 business days; bank details required</li>
-          <li>Shipping charges are non-refundable unless the return is due to our error</li>
-        </ul>
-      </PolicySection>
-      <PolicySection title="6. No-Refund Cases">
-        <ul className="list-disc pl-5 space-y-1">
-          <li>Change of mind after opening sealed electronic products</li>
-          <li>Physical damage caused by customer misuse</li>
-          <li>Products returned after 7 days of delivery without prior approval</li>
-          <li>Missing accessories, box, or original packaging</li>
-        </ul>
-      </PolicySection>
-      <PolicySection title="7. Contact">
+
+      <PolicySection title="5. Dropship Return Limitations">
         <p>
-          Refund & cancellation requests: {STORE.email} · {STORE.phone}<br />
-          Include your order number (e.g. GV100001) in all communications.
+          Returns for supplier-fulfilled items may require return to a designated address or supplier RMA process.
+          International return legs may take longer. We will guide you after approval.
+        </p>
+      </PolicySection>
+
+      <PolicySection title="6. Refund Timeline">
+        <ul className="list-disc pl-5 space-y-1">
+          <li><strong>Prepaid:</strong> 5–10 business days after approved return inspection</li>
+          <li><strong>COD:</strong> Bank/UPI refund within 7–14 business days after approval</li>
+          <li>Shipping fees non-refundable unless our error</li>
+        </ul>
+      </PolicySection>
+
+      <PolicySection title="7. Non-Refund Cases">
+        <ul className="list-disc pl-5 space-y-1">
+          <li>Change of mind after use or seal broken (where applicable)</li>
+          <li>Delays within published estimate ranges without product defect</li>
+          <li>Minor packaging dents that do not affect product function</li>
+          <li>False or abusive claims</li>
+        </ul>
+      </PolicySection>
+
+      <PolicySection title="8. Grievance">
+        <p>
+          Unresolved issues: <Link to="/grievance" className="text-primary">Grievance Redressal</Link> · {contactBlock()}
         </p>
       </PolicySection>
     </PolicyLayout>

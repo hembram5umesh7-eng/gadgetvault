@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { formatINR } from "@/lib/order-utils";
 import { STORE } from "@/lib/store-info";
+import { DELIVERY_ESTIMATES } from "@/lib/legal-copy";
 import { CartLineItem } from "@/components/cart-line-item";
 import { z } from "zod";
 import { useAuthedServerFn } from "@/lib/use-authed-server-fn";
@@ -353,8 +354,11 @@ function Checkout() {
                 I agree to the{" "}
                 <Link to="/terms" className="text-primary font-medium hover:underline">Terms & Conditions</Link>,{" "}
                 <Link to="/privacy" className="text-primary font-medium hover:underline">Privacy Policy</Link>,{" "}
-                <Link to="/refund" className="text-primary font-medium hover:underline">Refund Policy</Link>, and{" "}
-                <Link to="/shipping" className="text-primary font-medium hover:underline">Shipping Policy</Link>.
+                <Link to="/refund" className="text-primary font-medium hover:underline">Refund Policy</Link>,{" "}
+                <Link to="/shipping" className="text-primary font-medium hover:underline">Shipping Policy</Link>,{" "}
+                <Link to="/fulfillment" className="text-primary font-medium hover:underline">Fulfillment Policy</Link>, and{" "}
+                <Link to="/disclaimer" className="text-primary font-medium hover:underline">Disclaimer</Link>.
+                I understand delivery times are estimates ({DELIVERY_ESTIMATES.totalTypical}), not guaranteed dates.
               </label>
             </div>
           </div>

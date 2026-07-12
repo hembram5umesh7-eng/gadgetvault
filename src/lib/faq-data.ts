@@ -1,28 +1,29 @@
 import { STORE } from "@/lib/store-info";
+import { DELIVERY_ESTIMATES } from "@/lib/legal-copy";
 
 export const STORE_FAQ = [
   {
     q: "Where do products come from?",
-    a: "Products are listed from our supplier catalog (including CJ Dropshipping). Each product page shows the details provided by the supplier.",
+    a: "Many products are fulfilled via dropshipping partners (including CJ Dropshipping). We transmit your order to the supplier who ships to your address in India. See our Fulfillment Policy for details.",
+  },
+  {
+    q: "How long does delivery really take?",
+    a: `Estimated ${DELIVERY_ESTIMATES.totalTypical} — not a guaranteed date. Processing (${DELIVERY_ESTIMATES.processingDays}), supplier fulfilment (${DELIVERY_ESTIMATES.fulfillmentDays}), then courier (${DELIVERY_ESTIMATES.courierDays}). Delays can happen during festivals or stock issues.`,
+  },
+  {
+    q: "Can I complain if delivery is late?",
+    a: `Contact ${STORE.email} with your order number. Delays within our published estimates are not fraud. If fulfilment fails entirely, we refund per our Refund Policy. For disputes see Grievance Redressal.`,
   },
   {
     q: "What payment methods do you accept?",
-    a: "We accept Cash on Delivery (COD) where available and online payments via Razorpay — UPI, credit/debit cards, netbanking, and wallets.",
-  },
-  {
-    q: "How long does delivery take?",
-    a: "Orders are processed after payment confirmation. Delivery typically takes 3–7 business days across India depending on your pincode and courier.",
-  },
-  {
-    q: "Do you offer EMI?",
-    a: "EMI may be available at Razorpay checkout depending on your bank and card. We do not guarantee EMI on every product.",
+    a: "Online payments via Razorpay (UPI, cards, netbanking, wallets). COD where shown at checkout.",
   },
   {
     q: "Can I return a defective product?",
-    a: "Report damage or defects within 48 hours of delivery with photos. See our Refund & Cancellation Policy for full terms.",
+    a: "Report damage or wrong item within 48 hours with photos. See Refund Policy. Opened hygiene products may not be returnable.",
   },
   {
     q: "Is free shipping available?",
-    a: `Free shipping on orders above ₹${STORE.freeShippingMin}. Below that, a ₹${STORE.standardShippingFee} shipping fee applies.`,
+    a: `Free shipping on orders above ₹${STORE.freeShippingMin} where offered. Otherwise ₹${STORE.standardShippingFee} standard fee shown at checkout.`,
   },
 ] as const;

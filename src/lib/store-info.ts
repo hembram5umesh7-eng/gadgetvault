@@ -25,15 +25,18 @@ export const STORE = {
   hours: env("VITE_STORE_HOURS") || "Mon–Sat, 10:00 AM – 7:00 PM IST",
   freeShippingMin: Number(env("VITE_STORE_FREE_SHIPPING_MIN") || 999),
   standardShippingFee: Number(env("VITE_STORE_SHIPPING_FEE") || 79),
-  deliveryDays: env("VITE_STORE_DELIVERY_DAYS") || "3–7 business days",
+  deliveryDays: env("VITE_STORE_DELIVERY_DAYS") || "10–25 business days (estimate)",
   codAvailable: env("VITE_STORE_COD") !== "false",
 } as const;
 
 export const POLICY_LINKS = [
-  { label: "Privacy Policy", to: "/privacy" as const },
   { label: "Terms & Conditions", to: "/terms" as const },
+  { label: "Privacy Policy", to: "/privacy" as const },
   { label: "Refund & Cancellation", to: "/refund" as const },
   { label: "Shipping & Delivery", to: "/shipping" as const },
+  { label: "Fulfillment (CJ)", to: "/fulfillment" as const },
+  { label: "Disclaimer", to: "/disclaimer" as const },
+  { label: "Grievance Redressal", to: "/grievance" as const },
   { label: "Contact Us", to: "/contact" as const },
   { label: "About Us", to: "/about" as const },
 ] as const;

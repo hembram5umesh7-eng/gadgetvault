@@ -13,7 +13,7 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "GadgetVault — Premium Gadgets & Accessories" },
-      { name: "description", content: "Shop earbuds, smartwatches, chargers, power banks & tech accessories. Genuine products, fast delivery across India." },
+      { name: "description", content: "Kitchen accessories, unique gadgets & daily essentials. Secure Razorpay checkout, pan-India delivery with honest timelines." },
       { property: "og:title", content: "GadgetVault — Premium Gadgets & Accessories" },
       { property: "og:description", content: "Tech that powers your everyday." },
       { property: "og:type", content: "website" },

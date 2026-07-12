@@ -259,10 +259,11 @@ export function SiteFooter() {
         <div>
           <h4 className="font-bold mb-4 text-sm uppercase tracking-wide">Legal</h4>
           <ul className="space-y-2.5 text-sm text-muted-foreground">
-            <li><Link to="/about" className="hover:text-primary transition-colors">About Us</Link></li>
-            <li><Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
-            <li><Link to="/terms" className="hover:text-primary transition-colors">Terms & Conditions</Link></li>
-            <li><Link to="/partner" className="hover:text-primary transition-colors">Become a Supplier</Link></li>
+            {POLICY_LINKS.slice(0, 7).map((l) => (
+              <li key={l.to}>
+                <Link to={l.to} className="hover:text-primary transition-colors">{l.label}</Link>
+              </li>
+            ))}
           </ul>
         </div>
       </div>

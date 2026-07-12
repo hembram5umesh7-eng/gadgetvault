@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { PolicyLayout, PolicySection } from "@/components/policy-layout";
 import { STORE } from "@/lib/store-info";
+import { DELIVERY_ESTIMATES, LEGAL_LAST_UPDATED, NO_FRAUD_CLAUSE, contactBlock } from "@/lib/legal-copy";
 
 export const Route = createFileRoute("/shipping")({ component: ShippingPage });
 
@@ -8,55 +9,74 @@ function ShippingPage() {
   return (
     <PolicyLayout
       title="Shipping & Delivery Policy"
-      subtitle="How we deliver your orders across India."
-      lastUpdated="July 4, 2026"
+      subtitle="Coverage, charges, and honest delivery timelines for India."
+      lastUpdated={LEGAL_LAST_UPDATED}
     >
       <PolicySection title="1. Delivery Coverage">
         <p>
-          {STORE.name} delivers to all serviceable pin codes across India through our courier partners including
-          Shiprocket. Remote or restricted areas may have extended delivery times.
+          {STORE.name} ships to serviceable pin codes across India through courier partners. Remote, restricted, or
+          non-serviceable areas may be cancelled with a full refund.
         </p>
       </PolicySection>
+
       <PolicySection title="2. Shipping Charges">
         <ul className="list-disc pl-5 space-y-1">
-          <li>
-            <strong>Free shipping</strong> on orders above ₹{STORE.freeShippingMin}
-          </li>
-          <li>
-            <strong>Standard shipping:</strong> ₹{STORE.standardShippingFee} for orders below ₹{STORE.freeShippingMin}
-          </li>
-          <li>Shipping fee is calculated at checkout before payment</li>
+          <li><strong>Free shipping</strong> on orders above ₹{STORE.freeShippingMin} (where offered at checkout)</li>
+          <li><strong>Standard shipping:</strong> ₹{STORE.standardShippingFee} for orders below ₹{STORE.freeShippingMin}</li>
+          <li>Final shipping fee is shown at checkout before payment — no hidden charges after payment</li>
         </ul>
       </PolicySection>
-      <PolicySection title="3. Delivery Timeline">
-        <ul className="list-disc pl-5 space-y-1">
-          <li>Orders are processed within 1–2 business days after confirmation</li>
-          <li>Estimated delivery: {STORE.deliveryDays} from dispatch</li>
-          <li>Delays may occur due to weather, festivals, or courier disruptions — we will notify you via email/SMS</li>
+
+      <PolicySection title="3. Delivery Timelines — Estimates Only">
+        <p className="font-semibold text-foreground">
+          We do <strong>not</strong> guarantee delivery by a specific date unless explicitly stated in a signed written offer.
+        </p>
+        <ul className="list-disc pl-5 space-y-1 mt-2">
+          <li><strong>Processing:</strong> {DELIVERY_ESTIMATES.processingDays} after payment confirmation</li>
+          <li><strong>Supplier fulfilment (dropship):</strong> {DELIVERY_ESTIMATES.fulfillmentDays}</li>
+          <li><strong>Courier transit in India:</strong> {DELIVERY_ESTIMATES.courierDays} after dispatch</li>
+          <li><strong>Typical total:</strong> {DELIVERY_ESTIMATES.totalTypical}</li>
         </ul>
+        <p className="mt-2">{DELIVERY_ESTIMATES.extendedNote}</p>
+        <p className="mt-2">{NO_FRAUD_CLAUSE}</p>
+        <p className="mt-2">
+          Full dropshipping details:{" "}
+          <Link to="/fulfillment" className="text-primary">Fulfillment & Dropshipping Policy</Link>
+        </p>
       </PolicySection>
+
       <PolicySection title="4. Order Tracking">
         <p>
-          Once shipped, you will receive a tracking ID via email and can track your order at{" "}
-          <a href="/orders" className="text-primary">My Orders</a> after signing in to your account.
+          Tracking is shared by email and in{" "}
+          <Link to="/orders" className="text-primary">My Orders</Link> when the supplier/courier generates it.
+          Tracking may update late — contact us if no update after {DELIVERY_ESTIMATES.totalTypical}.
         </p>
       </PolicySection>
+
       <PolicySection title="5. Cash on Delivery (COD)">
         <p>
-          COD is available on eligible orders. Please keep exact change ready. If you refuse delivery without valid
-          reason, your account may be restricted from future COD orders.
+          {STORE.codAvailable
+            ? "COD is available on eligible orders at checkout. Refusal without valid reason may restrict future COD. COD orders follow the same estimated delivery windows."
+            : "COD is currently not offered. Online prepayment via Razorpay is required."}
         </p>
       </PolicySection>
-      <PolicySection title="6. Incorrect Address">
+
+      <PolicySection title="6. Address & Failed Delivery">
         <p>
-          Please ensure your shipping address is accurate. {STORE.name} is not responsible for failed delivery due to
-          incorrect or incomplete addresses provided by the customer. Re-shipping charges may apply.
+          You are responsible for accurate shipping details. Failed delivery due to wrong address, repeated unavailability,
+          or refusal may forfeit free return shipping. Re-delivery charges may apply.
         </p>
       </PolicySection>
-      <PolicySection title="7. Contact">
+
+      <PolicySection title="7. Force Majeure">
         <p>
-          Shipping queries: {STORE.email} · {STORE.phone}
+          Delays caused by natural disasters, strikes, pandemics, government orders, or courier shutdowns are outside our control.
+          We will communicate delays and offer refund/cancellation where fulfilment is impossible.
         </p>
+      </PolicySection>
+
+      <PolicySection title="8. Contact">
+        <p>{contactBlock()}</p>
       </PolicySection>
     </PolicyLayout>
   );

@@ -133,6 +133,7 @@ function AdminDashboard() {
             <Link to="/admin/cj-sync" className="p-3 rounded-lg bg-primary/10 text-primary hover:bg-primary/15 font-semibold flex items-center gap-2">
               <Upload className="h-4 w-4 shrink-0" /> CJ Import
             </Link>
+            <Link to="/admin/launch" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold">Launch countdown</Link>
             <Link to="/admin/products" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold">Products</Link>
             <Link to="/admin/orders" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold">Orders</Link>
             <Link to="/admin/coupons" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold">Coupons</Link>

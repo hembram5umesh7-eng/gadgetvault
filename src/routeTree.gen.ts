@@ -19,7 +19,10 @@ import { Route as RefundRouteImport } from './routes/refund'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PartnerRouteImport } from './routes/partner'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as GrievanceRouteImport } from './routes/grievance'
+import { Route as FulfillmentRouteImport } from './routes/fulfillment'
 import { Route as FaqRouteImport } from './routes/faq'
+import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as DealsRouteImport } from './routes/deals'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
@@ -41,6 +44,7 @@ import { Route as AdminStaffRouteImport } from './routes/admin.staff'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminManufacturersRouteImport } from './routes/admin.manufacturers'
+import { Route as AdminLaunchRouteImport } from './routes/admin.launch'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
 import { Route as AdminCjSyncRouteImport } from './routes/admin.cj-sync'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
@@ -96,9 +100,24 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GrievanceRoute = GrievanceRouteImport.update({
+  id: '/grievance',
+  path: '/grievance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FulfillmentRoute = FulfillmentRouteImport.update({
+  id: '/fulfillment',
+  path: '/fulfillment',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FaqRoute = FaqRouteImport.update({
   id: '/faq',
   path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DisclaimerRoute = DisclaimerRouteImport.update({
+  id: '/disclaimer',
+  path: '/disclaimer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DealsRoute = DealsRouteImport.update({
@@ -206,6 +225,11 @@ const AdminManufacturersRoute = AdminManufacturersRouteImport.update({
   path: '/manufacturers',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminLaunchRoute = AdminLaunchRouteImport.update({
+  id: '/launch',
+  path: '/launch',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCouponsRoute = AdminCouponsRouteImport.update({
   id: '/coupons',
   path: '/coupons',
@@ -238,7 +262,10 @@ export interface FileRoutesByFullPath {
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/deals': typeof DealsRoute
+  '/disclaimer': typeof DisclaimerRoute
   '/faq': typeof FaqRoute
+  '/fulfillment': typeof FulfillmentRoute
+  '/grievance': typeof GrievanceRoute
   '/login': typeof LoginRoute
   '/partner': typeof PartnerRoute
   '/privacy': typeof PrivacyRoute
@@ -252,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/cj-sync': typeof AdminCjSyncRoute
   '/admin/coupons': typeof AdminCouponsRoute
+  '/admin/launch': typeof AdminLaunchRoute
   '/admin/manufacturers': typeof AdminManufacturersRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -275,7 +303,10 @@ export interface FileRoutesByTo {
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/deals': typeof DealsRoute
+  '/disclaimer': typeof DisclaimerRoute
   '/faq': typeof FaqRoute
+  '/fulfillment': typeof FulfillmentRoute
+  '/grievance': typeof GrievanceRoute
   '/login': typeof LoginRoute
   '/partner': typeof PartnerRoute
   '/privacy': typeof PrivacyRoute
@@ -288,6 +319,7 @@ export interface FileRoutesByTo {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/cj-sync': typeof AdminCjSyncRoute
   '/admin/coupons': typeof AdminCouponsRoute
+  '/admin/launch': typeof AdminLaunchRoute
   '/admin/manufacturers': typeof AdminManufacturersRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -313,7 +345,10 @@ export interface FileRoutesById {
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/deals': typeof DealsRoute
+  '/disclaimer': typeof DisclaimerRoute
   '/faq': typeof FaqRoute
+  '/fulfillment': typeof FulfillmentRoute
+  '/grievance': typeof GrievanceRoute
   '/login': typeof LoginRoute
   '/partner': typeof PartnerRoute
   '/privacy': typeof PrivacyRoute
@@ -327,6 +362,7 @@ export interface FileRoutesById {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/cj-sync': typeof AdminCjSyncRoute
   '/admin/coupons': typeof AdminCouponsRoute
+  '/admin/launch': typeof AdminLaunchRoute
   '/admin/manufacturers': typeof AdminManufacturersRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -353,7 +389,10 @@ export interface FileRouteTypes {
     | '/compare'
     | '/contact'
     | '/deals'
+    | '/disclaimer'
     | '/faq'
+    | '/fulfillment'
+    | '/grievance'
     | '/login'
     | '/partner'
     | '/privacy'
@@ -367,6 +406,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/cj-sync'
     | '/admin/coupons'
+    | '/admin/launch'
     | '/admin/manufacturers'
     | '/admin/orders'
     | '/admin/products'
@@ -390,7 +430,10 @@ export interface FileRouteTypes {
     | '/compare'
     | '/contact'
     | '/deals'
+    | '/disclaimer'
     | '/faq'
+    | '/fulfillment'
+    | '/grievance'
     | '/login'
     | '/partner'
     | '/privacy'
@@ -403,6 +446,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/cj-sync'
     | '/admin/coupons'
+    | '/admin/launch'
     | '/admin/manufacturers'
     | '/admin/orders'
     | '/admin/products'
@@ -427,7 +471,10 @@ export interface FileRouteTypes {
     | '/compare'
     | '/contact'
     | '/deals'
+    | '/disclaimer'
     | '/faq'
+    | '/fulfillment'
+    | '/grievance'
     | '/login'
     | '/partner'
     | '/privacy'
@@ -441,6 +488,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/cj-sync'
     | '/admin/coupons'
+    | '/admin/launch'
     | '/admin/manufacturers'
     | '/admin/orders'
     | '/admin/products'
@@ -466,7 +514,10 @@ export interface RootRouteChildren {
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
   DealsRoute: typeof DealsRoute
+  DisclaimerRoute: typeof DisclaimerRoute
   FaqRoute: typeof FaqRoute
+  FulfillmentRoute: typeof FulfillmentRoute
+  GrievanceRoute: typeof GrievanceRoute
   LoginRoute: typeof LoginRoute
   PartnerRoute: typeof PartnerRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -556,11 +607,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/grievance': {
+      id: '/grievance'
+      path: '/grievance'
+      fullPath: '/grievance'
+      preLoaderRoute: typeof GrievanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fulfillment': {
+      id: '/fulfillment'
+      path: '/fulfillment'
+      fullPath: '/fulfillment'
+      preLoaderRoute: typeof FulfillmentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/faq': {
       id: '/faq'
       path: '/faq'
       fullPath: '/faq'
       preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/disclaimer': {
+      id: '/disclaimer'
+      path: '/disclaimer'
+      fullPath: '/disclaimer'
+      preLoaderRoute: typeof DisclaimerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/deals': {
@@ -710,6 +782,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminManufacturersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/launch': {
+      id: '/admin/launch'
+      path: '/launch'
+      fullPath: '/admin/launch'
+      preLoaderRoute: typeof AdminLaunchRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/coupons': {
       id: '/admin/coupons'
       path: '/coupons'
@@ -745,6 +824,7 @@ interface AdminRouteChildren {
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminCjSyncRoute: typeof AdminCjSyncRoute
   AdminCouponsRoute: typeof AdminCouponsRoute
+  AdminLaunchRoute: typeof AdminLaunchRoute
   AdminManufacturersRoute: typeof AdminManufacturersRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminProductsRoute: typeof AdminProductsRoute
@@ -757,6 +837,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminCjSyncRoute: AdminCjSyncRoute,
   AdminCouponsRoute: AdminCouponsRoute,
+  AdminLaunchRoute: AdminLaunchRoute,
   AdminManufacturersRoute: AdminManufacturersRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminProductsRoute: AdminProductsRoute,
@@ -788,7 +869,10 @@ const rootRouteChildren: RootRouteChildren = {
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
   DealsRoute: DealsRoute,
+  DisclaimerRoute: DisclaimerRoute,
   FaqRoute: FaqRoute,
+  FulfillmentRoute: FulfillmentRoute,
+  GrievanceRoute: GrievanceRoute,
   LoginRoute: LoginRoute,
   PartnerRoute: PartnerRoute,
   PrivacyRoute: PrivacyRoute,

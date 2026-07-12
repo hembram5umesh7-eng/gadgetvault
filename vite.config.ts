@@ -1,4 +1,5 @@
 import { defineConfig, loadEnv } from "vite";
+import path from "node:path";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { nitro } from "nitro/vite";
 import react from "@vitejs/plugin-react";
@@ -17,6 +18,9 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@": `${process.cwd()}/src`,
+        "@launch-template": path.resolve(process.cwd(), "../../launch-countdown-template/src"),
+        "lucide-react": path.resolve(process.cwd(), "node_modules/lucide-react"),
+        gsap: path.resolve(process.cwd(), "node_modules/gsap"),
       },
       dedupe: [
         "react",
@@ -25,12 +29,16 @@ export default defineConfig(({ mode }) => {
         "react/jsx-dev-runtime",
         "@tanstack/react-query",
         "@tanstack/query-core",
+        "gsap",
       ],
     },
     server: {
       host: true,
       port: 8080,
       strictPort: true,
+      fs: {
+        allow: [path.resolve(process.cwd(), "../..")],
+      },
     },
     optimizeDeps: {
       // Avoid stale pre-bundled deps causing 504 "Outdated Optimize Dep" in dev.
@@ -44,6 +52,8 @@ export default defineConfig(({ mode }) => {
         "@tanstack/react-query",
         "@tanstack/query-core",
         "@supabase/supabase-js",
+        "gsap",
+        "lucide-react",
       ],
     },
     plugins: [

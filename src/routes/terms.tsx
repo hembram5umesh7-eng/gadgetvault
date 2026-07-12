@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PolicyLayout, PolicySection } from "@/components/policy-layout";
 import { STORE } from "@/lib/store-info";
+import { CJ_FULFILLMENT_SUMMARY, LEGAL_LAST_UPDATED, NO_FRAUD_CLAUSE, contactBlock } from "@/lib/legal-copy";
 
 export const Route = createFileRoute("/terms")({ component: TermsPage });
 
@@ -8,71 +9,80 @@ function TermsPage() {
   return (
     <PolicyLayout
       title="Terms & Conditions"
-      subtitle="Please read these terms carefully before using our website or placing an order."
-      lastUpdated="July 4, 2026"
+      subtitle="Binding terms for using GadgetVault and placing orders."
+      lastUpdated={LEGAL_LAST_UPDATED}
     >
-      <PolicySection title="1. Acceptance of Terms">
+      <PolicySection title="1. Acceptance">
         <p>
-          By accessing {STORE.name} or placing an order, you agree to these Terms & Conditions, our Privacy Policy,
-          Refund & Cancellation Policy, and Shipping Policy. If you do not agree, please do not use our services.
+          By using {STORE.name} or placing an order, you agree to these Terms, our{" "}
+          <Link to="/privacy" className="text-primary">Privacy Policy</Link>,{" "}
+          <Link to="/refund" className="text-primary">Refund Policy</Link>,{" "}
+          <Link to="/shipping" className="text-primary">Shipping Policy</Link>,{" "}
+          <Link to="/fulfillment" className="text-primary">Fulfillment Policy</Link>, and{" "}
+          <Link to="/disclaimer" className="text-primary">Disclaimer</Link>.
         </p>
       </PolicySection>
+
       <PolicySection title="2. Eligibility">
-        <p>
-          You must be at least 18 years of age and capable of entering into a legally binding contract under Indian
-          law to use this platform and make purchases.
-        </p>
+        <p>You must be 18+ and capable of entering a binding contract under Indian law.</p>
       </PolicySection>
+
       <PolicySection title="3. Products & Pricing">
         <ul className="list-disc pl-5 space-y-1">
-          <li>All prices are listed in Indian Rupees (INR) and include applicable GST unless stated otherwise</li>
-          <li>Product images are for illustration; minor colour/variant differences may occur</li>
-          <li>We reserve the right to modify prices without prior notice; confirmed order prices are honoured</li>
-          <li>We may limit order quantities to prevent reselling or stock hoarding</li>
+          <li>Prices in INR; applicable taxes shown at checkout</li>
+          <li>Supplier-provided images/specs may vary slightly from the product received</li>
+          <li>Confirmed order prices are honoured; listing errors may be corrected before acceptance</li>
+          <li>We may limit quantities to prevent abuse</li>
         </ul>
       </PolicySection>
-      <PolicySection title="4. Orders & Payment">
+
+      <PolicySection title="4. Dropshipping & Fulfilment">
+        <p>{CJ_FULFILLMENT_SUMMARY}</p>
+      </PolicySection>
+
+      <PolicySection title="5. Orders & Payment">
         <p>
-          An order is confirmed only after successful payment (online via Razorpay) or COD order acceptance.
-          We accept Cash on Delivery (COD) and online payments via UPI, credit/debit cards, netbanking, and wallets
-          through Razorpay. Failed or cancelled payments will not be processed.
+          Orders are confirmed after successful Razorpay payment or COD acceptance. Failed payments are not processed.
+          You agree not to initiate fraudulent chargebacks or police complaints without first contacting our{" "}
+          <Link to="/grievance" className="text-primary">Grievance Redressal</Link> channel.
         </p>
       </PolicySection>
-      <PolicySection title="5. Shipping & Delivery">
+
+      <PolicySection title="6. Delivery">
+        <p>{NO_FRAUD_CLAUSE}</p>
+      </PolicySection>
+
+      <PolicySection title="7. Returns & Refunds">
+        <p>See <Link to="/refund" className="text-primary">Refund & Cancellation Policy</Link>.</p>
+      </PolicySection>
+
+      <PolicySection title="8. User Conduct">
         <p>
-          Delivery timelines and shipping charges are described in our{" "}
-          <Link to="/shipping" className="text-primary">Shipping & Delivery Policy</Link>. Risk of loss passes to you
-          upon delivery to the address provided.
+          You may not misuse the platform, submit false claims, harass staff, or attempt payment fraud. Violations may result
+          in account suspension and legal action.
         </p>
       </PolicySection>
-      <PolicySection title="6. Returns & Refunds">
+
+      <PolicySection title="9. Intellectual Property">
+        <p>Website content is owned by {STORE.legalName} or licensors. Unauthorized copying is prohibited.</p>
+      </PolicySection>
+
+      <PolicySection title="10. Limitation of Liability">
         <p>
-          Our return, refund, and cancellation terms are detailed in the{" "}
-          <Link to="/refund" className="text-primary">Refund & Cancellation Policy</Link>. Please review it before purchase.
+          Maximum liability per order is limited to the amount paid for that order. No liability for indirect or consequential
+          damages to the extent permitted by law.
         </p>
       </PolicySection>
-      <PolicySection title="7. Intellectual Property">
+
+      <PolicySection title="11. Governing Law & Disputes">
         <p>
-          All content on this website — including logos, text, images, and design — is owned by {STORE.legalName} and
-          protected under applicable copyright and trademark laws.
+          Governed by laws of India. Courts at Gautam Buddha Nagar, Uttar Pradesh have jurisdiction. You may also use consumer
+          forums under the Consumer Protection Act, 2019.
         </p>
       </PolicySection>
-      <PolicySection title="8. Limitation of Liability">
-        <p>
-          {STORE.name} shall not be liable for indirect, incidental, or consequential damages arising from use of our
-          platform. Our maximum liability for any order is limited to the amount paid for that order.
-        </p>
-      </PolicySection>
-      <PolicySection title="9. Governing Law">
-        <p>
-          These terms are governed by the laws of India. Disputes shall be subject to the exclusive jurisdiction of
-          courts in Gautam Buddha Nagar, Uttar Pradesh.
-        </p>
-      </PolicySection>
-      <PolicySection title="10. Contact">
-        <p>
-          {STORE.legalName} · {STORE.email} · {STORE.phone}
-        </p>
+
+      <PolicySection title="12. Contact">
+        <p>{contactBlock()}</p>
       </PolicySection>
     </PolicyLayout>
   );
