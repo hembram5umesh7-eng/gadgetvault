@@ -108,34 +108,54 @@
 }
 
 .dark {
-  --background: oklch(0.14 0.025 140);
-  --foreground: oklch(0.96 0.01 120);
-  --card: oklch(0.18 0.03 140);
-  --card-foreground: oklch(0.96 0.01 120);
-  --popover: oklch(0.18 0.03 140);
-  --popover-foreground: oklch(0.96 0.01 120);
-  --primary: oklch(0.62 0.10 130);
-  --primary-foreground: oklch(0.14 0.025 140);
-  --secondary: oklch(0.22 0.03 140);
-  --secondary-foreground: oklch(0.96 0.01 120);
-  --muted: oklch(0.22 0.03 140);
-  --muted-foreground: oklch(0.65 0.03 130);
-  --accent: oklch(0.68 0.11 95);
-  --accent-foreground: oklch(0.14 0.025 140);
-  --destructive: oklch(0.65 0.22 27);
+  --background: oklch(0.13 0.028 140);
+  --foreground: oklch(0.96 0.012 120);
+  --card: oklch(0.17 0.032 140);
+  --card-foreground: oklch(0.96 0.012 120);
+  --popover: oklch(0.17 0.032 140);
+  --popover-foreground: oklch(0.96 0.012 120);
+  --primary: oklch(0.68 0.11 130);
+  --primary-foreground: oklch(0.12 0.025 140);
+  --secondary: oklch(0.21 0.03 140);
+  --secondary-foreground: oklch(0.96 0.012 120);
+  --muted: oklch(0.20 0.028 140);
+  --muted-foreground: oklch(0.68 0.03 130);
+  --accent: oklch(0.72 0.12 95);
+  --accent-foreground: oklch(0.12 0.025 140);
+  --destructive: oklch(0.62 0.22 27);
   --destructive-foreground: oklch(1 0 0);
+  --success: oklch(0.62 0.12 145);
+  --success-foreground: oklch(0.12 0.025 140);
+  --warning: oklch(0.75 0.13 85);
+  --warning-foreground: oklch(0.12 0.025 140);
   --border: oklch(1 0 0 / 0.10);
-  --input: oklch(1 0 0 / 0.15);
-  --ring: oklch(0.62 0.10 130);
+  --input: oklch(1 0 0 / 0.12);
+  --ring: oklch(0.68 0.11 130);
+  --gradient-sale: linear-gradient(135deg, oklch(0.32 0.07 140), oklch(0.26 0.06 135));
+  --shadow-product: 0 8px 28px -8px oklch(0 0 0 / 0.55);
+  --shadow-elegant: 0 24px 56px -24px oklch(0 0 0 / 0.65);
+  --sidebar: oklch(0.15 0.028 140);
+  --sidebar-foreground: oklch(0.96 0.012 120);
+  --sidebar-primary: oklch(0.68 0.11 130);
+  --sidebar-primary-foreground: oklch(0.12 0.025 140);
+  --sidebar-accent: oklch(0.20 0.03 140);
+  --sidebar-accent-foreground: oklch(0.96 0.012 120);
+  --sidebar-border: oklch(1 0 0 / 0.08);
+  --sidebar-ring: oklch(0.68 0.11 130);
 }
 
 @layer base {
   * { border-color: var(--color-border); }
-  html { font-family: var(--font-display); }
+  html {
+    font-family: var(--font-display);
+    color-scheme: light;
+  }
+  html.dark { color-scheme: dark; }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
   h1, h2, h3, h4 { letter-spacing: -0.02em; font-weight: 700; }
 }
@@ -164,6 +184,14 @@
     border: 1px solid oklch(0.90 0.02 130 / 0.8);
     border-radius: var(--radius-2xl);
     box-shadow: 0 1px 3px oklch(0.20 0.03 135 / 0.04);
+  }
+  .dark .premium-card {
+    border-color: oklch(1 0 0 / 0.08);
+    box-shadow: 0 4px 20px oklch(0 0 0 / 0.35);
+  }
+  .dark .premium-product-card {
+    border-color: oklch(0.68 0.11 130 / 0.2);
+    box-shadow: 0 8px 32px oklch(0 0 0 / 0.4);
   }
   .prose-policy h2 { scroll-margin-top: 5rem; }
   .prose-policy a { color: var(--color-primary); font-weight: 500; }
@@ -195,8 +223,161 @@
     background: oklch(0.18 0.03 140 / 0.7);
     border-color: oklch(1 0 0 / 0.08);
   }
+  .scifi-stage { transform-style: preserve-3d; }
+  .scifi-holo-frame { transform-style: preserve-3d; }
+  .scifi-border-glow {
+    background: linear-gradient(135deg, rgba(163,230,53,0.7), rgba(132,204,22,0.2), rgba(255,255,255,0.15), rgba(163,230,53,0.5));
+    animation: scifi-border-spin 6s linear infinite;
+  }
+  .scifi-scanline {
+    top: -20%;
+    background: linear-gradient(180deg, transparent, rgba(163,230,53,0.12), rgba(163,230,53,0.25), rgba(163,230,53,0.12), transparent);
+  }
+  .scifi-holo-overlay {
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(163,230,53,0.02) 2px, rgba(163,230,53,0.02) 4px),
+      radial-gradient(ellipse at 30% 20%, rgba(163,230,53,0.05), transparent 55%);
+    mix-blend-mode: soft-light;
+    opacity: 0.65;
+  }
+  .scifi-shimmer {
+    background: linear-gradient(110deg, rgba(255,255,255,0.04) 30%, rgba(163,230,53,0.15) 50%, rgba(255,255,255,0.04) 70%);
+    background-size: 200% 100%;
+    animation: scifi-shimmer 1.8s ease-in-out infinite;
+  }
+  .scifi-floor {
+    background:
+      linear-gradient(180deg, transparent 0%, rgba(163,230,53,0.06) 100%),
+      repeating-linear-gradient(90deg, rgba(163,230,53,0.08) 0 1px, transparent 1px 40px),
+      repeating-linear-gradient(0deg, rgba(163,230,53,0.06) 0 1px, transparent 1px 40px);
+    transform: perspective(400px) rotateX(72deg);
+    transform-origin: center bottom;
+    opacity: 0.5;
+    mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+  }
+  .scifi-hud {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border-color: rgba(163,230,53,0.45);
+    border-style: solid;
+    pointer-events: none;
+    z-index: 15;
+  }
+  .scifi-hud-tl { top: 6%; left: 6%; border-width: 2px 0 0 2px; border-radius: 4px 0 0 0; }
+  .scifi-hud-tr { top: 6%; right: 6%; border-width: 2px 2px 0 0; border-radius: 0 4px 0 0; }
+  .scifi-hud-bl { bottom: 14%; left: 6%; border-width: 0 0 2px 2px; border-radius: 0 0 0 4px; }
+  .scifi-hud-br { bottom: 14%; right: 6%; border-width: 0 2px 2px 0; border-radius: 0 0 4px 0; }
+  .scifi-chip {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.75rem;
+    background: rgba(0,0,0,0.45);
+    border: 1px solid rgba(163,230,53,0.25);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 0 20px rgba(163,230,53,0.15);
+  }
+  .scifi-info-panel {
+    box-shadow: 0 0 40px rgba(163,230,53,0.08), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .scifi-title-glow {
+    text-shadow: 0 0 30px rgba(163,230,53,0.25);
+  }
+  .scifi-product-img {
+    filter: drop-shadow(0 0 24px rgba(163,230,53,0.2));
+  }
+  .scifi-pulse-ring {
+    animation: scifi-pulse-ring 4s ease-in-out infinite;
+  }
+  .premium-section-shell {
+    position: relative;
+  }
+  .premium-eyebrow {
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+  }
+  .premium-title-gradient {
+    background: linear-gradient(135deg, var(--color-foreground) 0%, var(--color-foreground) 55%, var(--color-primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .premium-product-card {
+    position: relative;
+    overflow: hidden;
+  }
+  .premium-product-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(163,230,53,0.06), transparent 45%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .premium-product-card:hover::before {
+    opacity: 1;
+  }
+  .premium-rail-fade-left,
+  .premium-rail-fade-right {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2rem;
+    z-index: 2;
+  }
+  .premium-rail-fade-left {
+    left: 0;
+    background: linear-gradient(to right, var(--color-card), transparent);
+  }
+  .premium-rail-fade-right {
+    right: 0;
+    background: linear-gradient(to left, var(--color-card), transparent);
+  }
+}
+@keyframes scifi-border-spin {
+  0% { filter: hue-rotate(0deg); opacity: 0.75; }
+  50% { opacity: 1; }
+  100% { filter: hue-rotate(15deg); opacity: 0.75; }
+}
+@keyframes scifi-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes scifi-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 @keyframes hero-mesh-shift {
   0% { opacity: 0.85; transform: scale(1); }
   100% { opacity: 1; transform: scale(1.05); }
+}
+@keyframes brand-marquee-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes brand-marquee-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+.brand-marquee-track-left {
+  animation: brand-marquee-left linear infinite;
+}
+.brand-marquee-track-right {
+  animation: brand-marquee-right linear infinite;
+}
+.brand-marquee-track-left:hover,
+.brand-marquee-track-right:hover {
+  animation-play-state: paused;
+}
+.brand-marquee-mask {
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+@keyframes scifi-pulse-ring {
+  0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.03); }
 }

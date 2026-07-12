@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { PRODUCT_CARD_SELECT } from "@/lib/product-pricing";
+import { useAuth } from "@/lib/auth-context";
+import { recordSearch } from "@/lib/user-personalization";
 
 export const Route = createFileRoute("/search")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -23,6 +25,7 @@ export const Route = createFileRoute("/search")({
 
 function SearchPage() {
   const { q, category: catFilter, sort, min, max } = Route.useSearch();
+  const { user } = useAuth();
   const { categories } = useCategories();
   const [products, setProducts] = useState<ProductCardData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,6 +55,10 @@ function SearchPage() {
       setLoading(false);
     });
   }, [q, localCat, localSort, priceMin, priceMax]);
+
+  useEffect(() => {
+    if (q.trim()) recordSearch(user?.id ?? null, q.trim(), localCat || undefined);
+  }, [q, localCat, user?.id]);
 
   const title = useMemo(() => q ? `Results for "${q}"` : localCat ? categories.find((c) => c.slug === localCat)?.name ?? "Gadgets" : "All Gadgets", [q, localCat, categories]);
 

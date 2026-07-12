@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Hero3DSlider, type HeroSlide } from "@/components/animations/hero-3d-slider";
+import { HeroSciFiShowcase, type HeroSlide } from "@/components/animations/hero-scifi-showcase";
 import { DELIVERY_ESTIMATES } from "@/lib/legal-copy";
 import { Cpu, Flash, ShieldTick } from "iconsax-react";
 
@@ -76,8 +76,9 @@ export function FuturisticHero({ slides, defaultCategory, productCount = 0 }: Fu
           </div>
 
           <div className="order-1 lg:order-2 relative">
-            <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-lime-400/20 to-transparent blur-2xl" />
-            <Hero3DSlider slides={slides} />
+            <div className="absolute -inset-8 rounded-full bg-lime-400/15 blur-3xl pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] h-[85%] rounded-full border border-lime-400/10 pointer-events-none scifi-pulse-ring" aria-hidden />
+            <HeroSciFiShowcase slides={slides} />
           </div>
         </div>
       </div>

@@ -16,7 +16,7 @@ export interface ProductCardData {
   is_bestseller?: boolean;
 }
 
-export function ProductCard({ p }: { p: ProductCardData }) {
+export function ProductCard({ p, premium = false, flashDeal = false }: { p: ProductCardData; premium?: boolean; flashDeal?: boolean }) {
   const img = p.images?.[0] ?? "";
   const mrp = productMrp(p.base_price, p.marketing_price);
   const discount = productDiscountPercent(p.base_price, p.marketing_price);
@@ -25,9 +25,18 @@ export function ProductCard({ p }: { p: ProductCardData }) {
     <Link
       to="/product/$slug"
       params={{ slug: p.slug }}
-      className="group premium-card flex flex-col overflow-hidden hover:shadow-elegant transition-all duration-300 hover:-translate-y-0.5"
+      search={flashDeal ? { deal: true } : {}}
+      className={`group flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
+        premium
+          ? "premium-product-card rounded-2xl border border-primary/10 bg-card shadow-md hover:shadow-elegant hover:border-primary/25"
+          : "premium-card hover:shadow-elegant hover:-translate-y-0.5"
+      }`}
     >
-      <div className="aspect-square relative overflow-hidden bg-gradient-to-br from-muted to-muted/50 p-4">
+      <div className={`aspect-square relative overflow-hidden p-4 ${
+        premium
+          ? "bg-gradient-to-br from-primary/[0.06] via-muted/40 to-accent/[0.05]"
+          : "bg-gradient-to-br from-muted to-muted/50"
+      }`}>
         {img ? (
           <img
             src={img}
@@ -42,14 +51,19 @@ export function ProductCard({ p }: { p: ProductCardData }) {
           {p.is_bestseller && (
             <span className="bg-foreground text-background text-[10px] font-bold px-2 py-1 rounded-lg">BESTSELLER</span>
           )}
-          {discount > 0 && (
+          {flashDeal && (
+            <span className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-0.5 w-fit">
+              <Flash size={10} variant="Bold" /> FLASH SALE
+            </span>
+          )}
+          {!flashDeal && discount > 0 && (
             <span className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-0.5 w-fit">
               <Flash size={10} variant="Bold" /> {discount}% OFF
             </span>
           )}
         </div>
       </div>
-      <div className="p-4 pt-3 flex flex-col flex-1">
+      <div className={`p-4 pt-3 flex flex-col flex-1 ${premium ? "border-t border-primary/5" : ""}`}>
         {p.brand && <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{p.brand}</p>}
         <p className="text-[10px] font-bold uppercase tracking-wider text-primary/80 capitalize">{p.category.replace(/-/g, " ")}</p>
         <h3 className="font-bold text-sm line-clamp-2 mt-1 leading-snug group-hover:text-primary transition-colors">{p.name}</h3>

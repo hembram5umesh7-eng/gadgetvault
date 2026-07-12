@@ -6,6 +6,7 @@ import { WishlistProvider } from "@/lib/wishlist-context";
 import { CompareProvider } from "@/lib/compare-context";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteVisitTracker } from "@/components/site-visit-tracker";
+import { ThemeProvider, THEME_INIT_SCRIPT, useTheme } from "@/lib/theme-context";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -32,8 +33,11 @@ export const Route = createRootRoute({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <head><HeadContent /></head>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body>
         {children}
         <Scripts />
@@ -42,19 +46,26 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+function ThemedToaster() {
+  const { resolved } = useTheme();
+  return <Toaster position="top-center" richColors theme={resolved} />;
+}
+
 function RootComponent() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <WishlistProvider>
-          <CompareProvider>
-            <Outlet />
-            <SiteVisitTracker />
-            <Toaster position="top-center" richColors />
-          </CompareProvider>
-        </WishlistProvider>
-      </CartProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <CompareProvider>
+              <Outlet />
+              <SiteVisitTracker />
+              <ThemedToaster />
+            </CompareProvider>
+          </WishlistProvider>
+        </CartProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

@@ -4,13 +4,14 @@ import { useAuth } from "@/lib/auth-context";
 import { syncSupabaseSession } from "@/lib/auth-session";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import {
-  LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Truck, ArrowLeft, UserCog, CloudDownload, Tag, Rocket,
+  LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Truck, ArrowLeft, UserCog, CloudDownload, Tag, Rocket, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { label: "Dashboard", to: "/admin", icon: LayoutDashboard, exact: true as const, superOnly: false },
   { label: "Launch", to: "/admin/launch", icon: Rocket, exact: false as const, superOnly: false },
+  { label: "Flash Sale", to: "/admin/flash-sale", icon: Zap, exact: false as const, superOnly: false },
   { label: "Products", to: "/admin/products", icon: Package, exact: false as const, superOnly: false },
   { label: "CJ Import", to: "/admin/cj-sync", icon: CloudDownload, exact: false as const, superOnly: false },
   { label: "Coupons", to: "/admin/coupons", icon: Tag, exact: false as const, superOnly: false },

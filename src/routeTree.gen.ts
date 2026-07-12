@@ -45,6 +45,7 @@ import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminManufacturersRouteImport } from './routes/admin.manufacturers'
 import { Route as AdminLaunchRouteImport } from './routes/admin.launch'
+import { Route as AdminFlashSaleRouteImport } from './routes/admin.flash-sale'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
 import { Route as AdminCjSyncRouteImport } from './routes/admin.cj-sync'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
@@ -230,6 +231,11 @@ const AdminLaunchRoute = AdminLaunchRouteImport.update({
   path: '/launch',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminFlashSaleRoute = AdminFlashSaleRouteImport.update({
+  id: '/flash-sale',
+  path: '/flash-sale',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCouponsRoute = AdminCouponsRouteImport.update({
   id: '/coupons',
   path: '/coupons',
@@ -279,6 +285,7 @@ export interface FileRoutesByFullPath {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/cj-sync': typeof AdminCjSyncRoute
   '/admin/coupons': typeof AdminCouponsRoute
+  '/admin/flash-sale': typeof AdminFlashSaleRoute
   '/admin/launch': typeof AdminLaunchRoute
   '/admin/manufacturers': typeof AdminManufacturersRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -319,6 +326,7 @@ export interface FileRoutesByTo {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/cj-sync': typeof AdminCjSyncRoute
   '/admin/coupons': typeof AdminCouponsRoute
+  '/admin/flash-sale': typeof AdminFlashSaleRoute
   '/admin/launch': typeof AdminLaunchRoute
   '/admin/manufacturers': typeof AdminManufacturersRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -362,6 +370,7 @@ export interface FileRoutesById {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/cj-sync': typeof AdminCjSyncRoute
   '/admin/coupons': typeof AdminCouponsRoute
+  '/admin/flash-sale': typeof AdminFlashSaleRoute
   '/admin/launch': typeof AdminLaunchRoute
   '/admin/manufacturers': typeof AdminManufacturersRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -406,6 +415,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/cj-sync'
     | '/admin/coupons'
+    | '/admin/flash-sale'
     | '/admin/launch'
     | '/admin/manufacturers'
     | '/admin/orders'
@@ -446,6 +456,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/cj-sync'
     | '/admin/coupons'
+    | '/admin/flash-sale'
     | '/admin/launch'
     | '/admin/manufacturers'
     | '/admin/orders'
@@ -488,6 +499,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/cj-sync'
     | '/admin/coupons'
+    | '/admin/flash-sale'
     | '/admin/launch'
     | '/admin/manufacturers'
     | '/admin/orders'
@@ -789,6 +801,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLaunchRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/flash-sale': {
+      id: '/admin/flash-sale'
+      path: '/flash-sale'
+      fullPath: '/admin/flash-sale'
+      preLoaderRoute: typeof AdminFlashSaleRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/coupons': {
       id: '/admin/coupons'
       path: '/coupons'
@@ -824,6 +843,7 @@ interface AdminRouteChildren {
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminCjSyncRoute: typeof AdminCjSyncRoute
   AdminCouponsRoute: typeof AdminCouponsRoute
+  AdminFlashSaleRoute: typeof AdminFlashSaleRoute
   AdminLaunchRoute: typeof AdminLaunchRoute
   AdminManufacturersRoute: typeof AdminManufacturersRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
@@ -837,6 +857,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminCjSyncRoute: AdminCjSyncRoute,
   AdminCouponsRoute: AdminCouponsRoute,
+  AdminFlashSaleRoute: AdminFlashSaleRoute,
   AdminLaunchRoute: AdminLaunchRoute,
   AdminManufacturersRoute: AdminManufacturersRoute,
   AdminOrdersRoute: AdminOrdersRoute,

@@ -13,10 +13,18 @@ import { formatINR } from "@/lib/order-utils";
 import { STORE } from "@/lib/store-info";
 import { VARIANT_COLOR_LABEL, VARIANT_SIZE_LABEL } from "@/lib/gadget-labels";
 import { productMrp } from "@/lib/product-pricing";
-import { toast } from "sonner";
+import { useAuth } from "@/lib/auth-context";
+import { recordProductView } from "@/lib/user-personalization";
+import { fetchFlashSalePrice } from "@/lib/flash-sale-client";
 import { ShoppingBag, Flash, ShieldTick, Truck, Heart, Element3 } from "iconsax-react";
+import { toast } from "sonner";
 
-export const Route = createFileRoute("/product/$slug")({ component: ProductPage });
+export const Route = createFileRoute("/product/$slug")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    deal: s.deal === true || s.deal === "true" || s.deal === 1 || s.deal === "1",
+  }),
+  component: ProductPage,
+});
 
 interface Product {
   id: string;
@@ -42,6 +50,8 @@ interface Variant {
 
 function ProductPage() {
   const { slug } = useParams({ from: "/product/$slug" });
+  const { deal: flashDealContext } = Route.useSearch();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const cart = useCart();
   const wishlist = useWishlist();
@@ -51,13 +61,22 @@ function ProductPage() {
   const [model, setModel] = useState<string | null>(null);
   const [color, setColor] = useState<string | null>(null);
   const [imgIdx, setImgIdx] = useState(0);
+  const [flashPrice, setFlashPrice] = useState<{ active: boolean; salePrice: number | null; displayMrp: number | null }>({
+    active: false,
+    salePrice: null,
+    displayMrp: null,
+  });
 
   useEffect(() => {
     (async () => {
       const { data: p } = await supabase.from("products").select("*").eq("slug", slug).maybeSingle();
       if (p) {
         setProduct(p as Product);
-        const { data: vs } = await supabase.from("product_variants").select("*").eq("product_id", p.id);
+        const [{ data: vs }, flash] = await Promise.all([
+          supabase.from("product_variants").select("*").eq("product_id", p.id),
+          fetchFlashSalePrice(p.id),
+        ]);
+        setFlashPrice(flash);
         const loaded = (vs as Variant[]) ?? [];
         setVariants(loaded);
         if (loaded.length) {
@@ -67,6 +86,16 @@ function ProductPage() {
       }
     })();
   }, [slug]);
+
+  useEffect(() => {
+    if (!product) return;
+    recordProductView(user?.id ?? null, {
+      id: product.id,
+      slug: product.slug,
+      name: product.name,
+      category: product.category,
+    });
+  }, [product?.id, product?.slug, product?.name, product?.category, user?.id]);
 
   const models = useMemo(() => Array.from(new Set(variants.map((v) => v.size))), [variants]);
   const colors = useMemo(() => {
@@ -119,8 +148,13 @@ function ProductPage() {
     </div>
   );
 
-  const mrp = productMrp(product.base_price, product.marketing_price);
-  const discount = mrp > product.base_price ? Math.round((1 - product.base_price / mrp) * 100) : 0;
+  const isFlashCheckout = flashDealContext && flashPrice.active && flashPrice.salePrice != null;
+  const salePrice = isFlashCheckout ? flashPrice.salePrice! : product.base_price;
+  const showMrp = isFlashCheckout && flashPrice.displayMrp != null
+    ? flashPrice.displayMrp
+    : productMrp(product.base_price, product.marketing_price);
+  const mrp = showMrp;
+  const discount = mrp > salePrice ? Math.round((1 - salePrice / mrp) * 100) : 0;
 
   const addToCart = (buyNow = false) => {
     if (!model || !color) { toast.error(`Pick ${VARIANT_SIZE_LABEL.toLowerCase()} and color`); return; }
@@ -132,7 +166,8 @@ function ProductPage() {
       size: model, color,
       colorHex: selectedVariant?.color_hex ?? "#000",
       variantId: selectedVariant?.id ?? null,
-      basePrice: product.base_price,
+      basePrice: salePrice,
+      priceSource: isFlashCheckout ? "flash" : "regular",
       quantity: 1,
     });
     toast.success(buyNow ? "Added — opening cart" : "Added to cart ✓");
@@ -146,7 +181,7 @@ function ProductPage() {
       slug: product.slug,
       name: product.name,
       image: product.images?.[0] ?? "",
-      price: product.base_price,
+      price: salePrice,
     });
     toast.message(wasIn ? "Removed from wishlist" : "Added to wishlist");
   };
@@ -157,7 +192,7 @@ function ProductPage() {
       slug: product.slug,
       name: product.name,
       image: product.images?.[0] ?? "",
-      price: product.base_price,
+      price: salePrice,
       specs: product.specs,
       category: product.category,
     });
@@ -200,7 +235,12 @@ function ProductPage() {
             )}
 
             <div className="mt-4 flex items-baseline gap-3 flex-wrap">
-              <span className="text-3xl font-extrabold">{formatINR(product.base_price)}</span>
+              {isFlashCheckout && (
+                <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-lg flex items-center gap-1">
+                  <Flash size={12} variant="Bold" /> Flash Sale Price
+                </span>
+              )}
+              <span className="text-3xl font-extrabold">{formatINR(salePrice)}</span>
               {discount > 0 && (
                 <>
                   <span className="text-lg text-muted-foreground line-through">{formatINR(mrp)}</span>
@@ -210,6 +250,24 @@ function ProductPage() {
                 </>
               )}
             </div>
+            {!isFlashCheckout && flashPrice.active && flashPrice.salePrice != null && flashPrice.salePrice !== product.base_price && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Flash sale price {formatINR(flashPrice.salePrice)} available via{" "}
+                <Link
+                  to="/product/$slug"
+                  params={{ slug: product.slug }}
+                  search={{ deal: true }}
+                  className="text-primary font-semibold hover:underline"
+                >
+                  Flash Sale
+                </Link>{" "}
+                or{" "}
+                <Link to="/deals" className="text-primary font-semibold hover:underline">
+                  Deals page
+                </Link>
+                .
+              </p>
+            )}
             <p className="text-xs text-muted-foreground mt-1">Price inclusive of applicable taxes</p>
 
             <div className="mt-6">

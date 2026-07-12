@@ -10,6 +10,7 @@ import {
   isSuperAdmin,
   authStorageKey,
 } from "@/lib/auth-session";
+import { mergeGuestPersonalizationIntoUser } from "@/lib/user-personalization";
 
 export type { AppRole };
 
@@ -61,7 +62,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setReady(true);
     })();
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (event === "SIGNED_IN" && nextSession?.user?.id) {
+        mergeGuestPersonalizationIntoUser(nextSession.user.id);
+      }
       commit(nextSession ?? readCachedSession());
       if (active) setReady(true);
     });

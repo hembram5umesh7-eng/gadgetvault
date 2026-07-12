@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { SingleImageUpload } from "@/components/image-upload";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -127,13 +128,21 @@ function AdminCategories() {
 
       {editing && (
         <Dialog open onOpenChange={(o) => !o && setEditing(null)}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-lg">
             <DialogHeader><DialogTitle>{editing.id ? "Edit Category" : "New Category"}</DialogTitle></DialogHeader>
             <div className="grid gap-3 py-2">
               <div><Label>Name</Label><Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} /></div>
               <div><Label>Slug</Label><Input value={editing.slug} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} placeholder="auto from name" /></div>
               <div><Label>Description</Label><Input value={editing.description ?? ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} /></div>
-              <div><Label>Image URL</Label><Input value={editing.image_url ?? ""} onChange={(e) => setEditing({ ...editing, image_url: e.target.value })} /></div>
+              <div>
+                <Label>Category image</Label>
+                <SingleImageUpload
+                  value={editing.image_url?.trim() || null}
+                  onChange={(url) => setEditing({ ...editing, image_url: url ?? "" })}
+                  folder="categories"
+                  placeholder="Paste image URL or upload"
+                />
+              </div>
               <div><Label>Sort order</Label><Input type="number" value={editing.sort_order} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })} /></div>
               <div className="flex items-center justify-between border rounded-lg p-3">
                 <span className="text-sm font-semibold">Active</span>

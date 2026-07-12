@@ -25,6 +25,11 @@ export function CartLineItem({ item, onUpdateQty, onRemove, compact }: CartLineI
         <h3 className={`font-bold leading-snug ${compact ? "text-sm line-clamp-2" : "text-sm md:text-base"}`}>
           {item.productName}
         </h3>
+        {item.priceSource === "flash" && (
+          <span className="inline-block mt-1 text-[10px] font-bold uppercase text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+            Flash Sale price
+          </span>
+        )}
         <p className="text-xs text-muted-foreground mt-0.5">{item.color} · {item.size}</p>
 
         <div className="mt-2 flex flex-wrap items-center gap-2">

@@ -11,6 +11,8 @@ export interface CartItem {
   variantId: string | null;
   basePrice: number;
   quantity: number;
+  /** flash = flash sale price; regular = catalog/category price */
+  priceSource?: "flash" | "regular";
 }
 
 interface CartContextValue {
@@ -27,8 +29,8 @@ interface CartContextValue {
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 const STORAGE_KEY = "gv_cart_v2";
 
-function lineKey(item: Pick<CartItem, "productId" | "variantId" | "size" | "color">) {
-  return `${item.productId}|${item.variantId ?? ""}|${item.size}|${item.color}`;
+function lineKey(item: Pick<CartItem, "productId" | "variantId" | "size" | "color" | "priceSource">) {
+  return `${item.productId}|${item.variantId ?? ""}|${item.size}|${item.color}|${item.priceSource ?? "regular"}`;
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {

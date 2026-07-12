@@ -540,6 +540,42 @@ const estimateInput = z.object({
   sellPriceInr: z.number().positive().optional(),
 });
 
+async function fetchCJIndiaShippingOptions(
+  vid: string,
+  opts: { pincode?: string; destCountryCode?: string },
+): Promise<CJLogisticsOption[]> {
+  const freightPayload: Record<string, unknown> = {
+    startCountryCode: "CN",
+    endCountryCode: opts.destCountryCode || "IN",
+    products: [{ quantity: 1, vid }],
+  };
+  if (opts.pincode?.trim()) freightPayload.zip = opts.pincode.trim();
+
+  const freightRaw = await cjFetch<Array<Record<string, unknown>>>("/logistic/freightCalculate", {
+    method: "POST",
+    body: JSON.stringify(freightPayload),
+  });
+
+  return (freightRaw ?? [])
+    .map((row) => ({
+      logisticName: String(row.logisticName ?? ""),
+      logisticPriceUsd: Number(row.logisticPrice ?? row.totalPostageFee ?? 0),
+      logisticAging: String(row.logisticAging ?? ""),
+    }))
+    .filter((o) => o.logisticName && o.logisticPriceUsd > 0);
+}
+
+function fallbackShippingOptions(): CJLogisticsOption[] {
+  const fallbackShipping = Number(process.env.CJ_DEFAULT_SHIPPING_USD ?? 4);
+  return [
+    {
+      logisticName: process.env.CJ_LOGISTIC_NAME?.trim() || "Shipping estimate",
+      logisticPriceUsd: fallbackShipping,
+      logisticAging: "10-25 biz days",
+    },
+  ];
+}
+
 /** Estimate CJ product + shipping cost and recommended selling price before import. */
 export const estimateCJImportProfit = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -555,25 +591,10 @@ export const estimateCJImportProfit = createServerFn({ method: "POST" })
     const productCostUsd = baseVariant.variantSellPrice || detail.sellPriceUsd;
     if (!productCostUsd) throw new Error("Could not read CJ product cost");
 
-    const freightPayload: Record<string, unknown> = {
-      startCountryCode: "CN",
-      endCountryCode: data.destCountryCode || "IN",
-      products: [{ quantity: 1, vid: baseVariant.vid }],
-    };
-    if (data.pincode?.trim()) freightPayload.zip = data.pincode.trim();
-
-    const freightRaw = await cjFetch<Array<Record<string, unknown>>>("/logistic/freightCalculate", {
-      method: "POST",
-      body: JSON.stringify(freightPayload),
+    const shippingOptions = await fetchCJIndiaShippingOptions(baseVariant.vid, {
+      pincode: data.pincode,
+      destCountryCode: data.destCountryCode,
     });
-
-    const shippingOptions: CJLogisticsOption[] = (freightRaw ?? [])
-      .map((row) => ({
-        logisticName: String(row.logisticName ?? ""),
-        logisticPriceUsd: Number(row.logisticPrice ?? row.totalPostageFee ?? 0),
-        logisticAging: String(row.logisticAging ?? ""),
-      }))
-      .filter((o) => o.logisticName && o.logisticPriceUsd > 0);
 
     if (!shippingOptions.length) throw new Error("No shipping options returned for India");
 
@@ -591,6 +612,101 @@ export const estimateCJImportProfit = createServerFn({ method: "POST" })
       : undefined;
 
     return { ...estimate, preview };
+  });
+
+const storeEstimateInput = z.object({
+  storeProductId: z.string().uuid(),
+  destCountryCode: z.string().default("IN"),
+  pincode: z.string().max(12).optional(),
+  logisticName: z.string().optional(),
+  sellPriceInr: z.number().positive().optional(),
+});
+
+/** Landed cost (CJ product + India shipping) for a store product — flash sale / pricing. */
+export const estimateStoreProductProfit = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => storeEstimateInput.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertStaffOrAdmin(context.userId);
+
+    const { data: product } = await supabaseAdmin
+      .from("products")
+      .select("id, name, cj_product_id, cj_cost_usd, fulfillment_source")
+      .eq("id", data.storeProductId)
+      .single();
+    if (!product) throw new Error("Product not found");
+
+    let productCostUsd = Number(product.cj_cost_usd) || 0;
+    let variantCount = 1;
+    let variantVid: string | null = null;
+
+    const { data: variants } = await supabaseAdmin
+      .from("product_variants")
+      .select("cj_variant_id")
+      .eq("product_id", product.id)
+      .not("cj_variant_id", "is", null);
+
+    variantCount = Math.max(variants?.length ?? 0, 1);
+    variantVid = variants?.[0]?.cj_variant_id ?? null;
+
+    if (product.cj_product_id && cjConfigured()) {
+      try {
+        const detail = await fetchCJProductDetail(product.cj_product_id);
+        if (detail.variants.length) {
+          const baseVariant = detail.variants[0];
+          productCostUsd = baseVariant.variantSellPrice || detail.sellPriceUsd || productCostUsd;
+          variantVid = variantVid || baseVariant.vid;
+          variantCount = detail.variants.length;
+        }
+      } catch {
+        /* use stored cj_cost_usd */
+      }
+    }
+
+    if (!productCostUsd) {
+      throw new Error("No CJ cost on product — import from CJ Sync first");
+    }
+
+    let shippingOptions: CJLogisticsOption[] = [];
+    let shippingIsEstimate = true;
+
+    if (variantVid && cjConfigured()) {
+      try {
+        shippingOptions = await fetchCJIndiaShippingOptions(variantVid, {
+          pincode: data.pincode,
+          destCountryCode: data.destCountryCode,
+        });
+        shippingIsEstimate = false;
+      } catch {
+        shippingOptions = fallbackShippingOptions();
+      }
+    } else {
+      shippingOptions = fallbackShippingOptions();
+    }
+
+    if (!shippingOptions.length) shippingOptions = fallbackShippingOptions();
+
+    const preferred = data.logisticName?.trim() || process.env.CJ_LOGISTIC_NAME?.trim();
+    const estimate = buildProfitEstimate({
+      productName: product.name,
+      variantCount,
+      productCostUsd,
+      shippingOptions,
+      preferredLogistic: preferred,
+    });
+
+    const preview = data.sellPriceInr
+      ? profitFromSelling(estimate.totalCostInr, data.sellPriceInr)
+      : undefined;
+
+    return {
+      ...estimate,
+      preview,
+      storeProductId: product.id,
+      fulfillmentSource: product.fulfillment_source,
+      isCjLinked: Boolean(product.cj_product_id),
+      shippingIsEstimate,
+    };
   });
 
 export type { CJListProduct };
