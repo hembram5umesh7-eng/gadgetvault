@@ -39,7 +39,7 @@ export const gadgetVaultLaunchConfig: LaunchTemplateConfig = {
     { icon: Cpu, title: "Curated Catalog", desc: "Kitchen, gadgets & necessities in one store" },
     { icon: ShieldCheck, title: "Secure Checkout", desc: "Razorpay · UPI · Cards · COD" },
     { icon: Truck, title: "Pan-India Delivery", desc: "Ships across India after order confirm" },
-    { icon: Sparkles, title: "CJ Fulfillment", desc: "Products sourced & fulfilled via trusted suppliers" },
+    { icon: Sparkles, title: "Partner Fulfilment", desc: "Products sourced & shipped via trusted Indian partners" },
   ],
   infoCards: [
     {

@@ -3,7 +3,7 @@ import { Package, Truck, Clock, CheckCircle2 } from "lucide-react";
 
 const STEPS = [
   { icon: CheckCircle2, title: "Order confirmed", desc: DELIVERY_ESTIMATES.processingDays + " processing" },
-  { icon: Package, title: "Supplier fulfilment", desc: DELIVERY_ESTIMATES.fulfillmentDays + " (CJ/partner)" },
+  { icon: Package, title: "Partner dispatch", desc: DELIVERY_ESTIMATES.fulfillmentDays + " prep & handover" },
   { icon: Truck, title: "India courier", desc: DELIVERY_ESTIMATES.courierDays + " transit" },
   { icon: Clock, title: "Typical total", desc: DELIVERY_ESTIMATES.totalTypical + " — estimate only" },
 ];
@@ -17,7 +17,8 @@ export function DeliveryTimelineSection() {
           <p className="text-xs font-bold uppercase tracking-wider text-primary">Honest delivery</p>
           <h2 className="text-2xl md:text-3xl font-extrabold mt-1">How your order reaches you</h2>
           <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-            We use dropshipping partners — timelines are estimates, not guaranteed dates. This protects you with clear expectations and protects us legally.
+            Orders ship via fulfilment partners across India — timelines are estimates, not guaranteed dates.
+            Remote areas may take {DELIVERY_ESTIMATES.remoteTypical}.
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
             {STEPS.map((s, i) => (

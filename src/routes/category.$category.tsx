@@ -1,10 +1,9 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchProductsByCategory } from "@/lib/products";
+import { fetchCategoryBySlug } from "@/lib/categories";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { ProductCard, type ProductCardData } from "@/components/product-card";
-import { PRODUCT_CARD_SELECT } from "@/lib/product-pricing";
-import { fetchCategoryBySlug } from "@/lib/categories";
 import { getCategoryImage } from "@/components/category-tile";
 import { ImmersiveReveal } from "@/components/animations/immersive-reveal";
 
@@ -20,18 +19,11 @@ function CategoryPage() {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([
-      fetchCategoryBySlug(category),
-      supabase
-        .from("products")
-        .select(PRODUCT_CARD_SELECT)
-        .eq("active", true)
-        .eq("category", category),
-    ]).then(([cat, { data }]) => {
+    Promise.all([fetchCategoryBySlug(category), fetchProductsByCategory(category)]).then(([cat, data]) => {
       setTitle(cat?.name ?? category);
       setDescription(cat?.description ?? null);
       setImageUrl(getCategoryImage(category, cat?.image_url) || null);
-      setProducts((data as ProductCardData[]) ?? []);
+      setProducts(data);
       setLoading(false);
     });
   }, [category]);
@@ -61,7 +53,15 @@ function CategoryPage() {
             ))}
           </div>
         ) : products.length === 0 ? (
-          <div className="premium-card text-center py-20 text-muted-foreground">No products in this category yet.</div>
+          <div className="premium-card text-center py-16 px-6 text-muted-foreground space-y-3">
+            <p className="text-base font-semibold text-foreground">No products in this category yet.</p>
+            <p className="text-sm max-w-lg mx-auto">
+              Agar product Shopify Admin mein hai lekin yahan nahi dikh raha, to wo shayad sirf Online Store par publish hai — Headless (gadgetvault) channel par publish karna hoga.
+            </p>
+            <p className="text-xs">
+              Admin → Dashboard → <strong>Sync all to GadgetVault</strong> ya Shopify mein product → Publishing → Headless ✓
+            </p>
+          </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {products.map((p, i) => (

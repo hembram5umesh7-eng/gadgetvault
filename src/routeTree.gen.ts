@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as WarrantyRouteImport } from './routes/warranty'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as SubadminRouteImport } from './routes/subadmin'
 import { Route as StaffRouteImport } from './routes/staff'
 import { Route as ShippingRouteImport } from './routes/shipping'
 import { Route as SearchRouteImport } from './routes/search'
@@ -33,23 +34,38 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SubadminIndexRouteImport } from './routes/subadmin.index'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
 import { Route as OrdersIndexRouteImport } from './routes/orders.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as SubadminHistoryRouteImport } from './routes/subadmin.history'
+import { Route as SubadminDropshipRouteImport } from './routes/subadmin.dropship'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 import { Route as OrdersOrderIdRouteImport } from './routes/orders.$orderId'
 import { Route as CategoryCategoryRouteImport } from './routes/category.$category'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminSubadminsRouteImport } from './routes/admin.subadmins'
 import { Route as AdminStaffRouteImport } from './routes/admin.staff'
+import { Route as AdminShopifyRouteImport } from './routes/admin.shopify'
+import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
+import { Route as AdminReferralsRouteImport } from './routes/admin.referrals'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
+import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminManufacturersRouteImport } from './routes/admin.manufacturers'
 import { Route as AdminLaunchRouteImport } from './routes/admin.launch'
 import { Route as AdminFlashSaleRouteImport } from './routes/admin.flash-sale'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
-import { Route as AdminCjSyncRouteImport } from './routes/admin.cj-sync'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
+import { Route as AccountLogoutRouteImport } from './routes/account.logout'
+import { Route as AccountLoginRouteImport } from './routes/account.login'
+import { Route as AccountAuthorizeRouteImport } from './routes/account.authorize'
 import { Route as ApiWebhooksShippingRouteImport } from './routes/api.webhooks.shipping'
+import { Route as ApiWebhooksRazorpayRouteImport } from './routes/api.webhooks.razorpay'
+import { Route as ApiShopifyAuthRouteImport } from './routes/api.shopify.auth'
+import { Route as ApiWebhooksShopifyProductsRouteImport } from './routes/api.webhooks.shopify.products'
+import { Route as ApiWebhooksShopifyOrdersRouteImport } from './routes/api.webhooks.shopify.orders'
+import { Route as ApiShopifyAuthCallbackRouteImport } from './routes/api.shopify.auth.callback'
 
 const WishlistRoute = WishlistRouteImport.update({
   id: '/wishlist',
@@ -64,6 +80,11 @@ const WarrantyRoute = WarrantyRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SubadminRoute = SubadminRouteImport.update({
+  id: '/subadmin',
+  path: '/subadmin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StaffRoute = StaffRouteImport.update({
@@ -171,6 +192,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SubadminIndexRoute = SubadminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SubadminRoute,
+} as any)
 const StaffIndexRoute = StaffIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -185,6 +211,16 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRoute,
+} as any)
+const SubadminHistoryRoute = SubadminHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => SubadminRoute,
+} as any)
+const SubadminDropshipRoute = SubadminDropshipRouteImport.update({
+  id: '/dropship',
+  path: '/dropship',
+  getParentRoute: () => SubadminRoute,
 } as any)
 const ProductSlugRoute = ProductSlugRouteImport.update({
   id: '/product/$slug',
@@ -206,14 +242,39 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSubadminsRoute = AdminSubadminsRouteImport.update({
+  id: '/subadmins',
+  path: '/subadmins',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminStaffRoute = AdminStaffRouteImport.update({
   id: '/staff',
   path: '/staff',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminShopifyRoute = AdminShopifyRouteImport.update({
+  id: '/shopify',
+  path: '/shopify',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReviewsRoute = AdminReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReferralsRoute = AdminReferralsRouteImport.update({
+  id: '/referrals',
+  path: '/referrals',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminProductsRoute = AdminProductsRouteImport.update({
   id: '/products',
   path: '/products',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminOrdersRoute = AdminOrdersRouteImport.update({
@@ -241,26 +302,63 @@ const AdminCouponsRoute = AdminCouponsRouteImport.update({
   path: '/coupons',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminCjSyncRoute = AdminCjSyncRouteImport.update({
-  id: '/cj-sync',
-  path: '/cj-sync',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
   getParentRoute: () => AdminRoute,
+} as any)
+const AccountLogoutRoute = AccountLogoutRouteImport.update({
+  id: '/logout',
+  path: '/logout',
+  getParentRoute: () => AccountRoute,
+} as any)
+const AccountLoginRoute = AccountLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AccountRoute,
+} as any)
+const AccountAuthorizeRoute = AccountAuthorizeRouteImport.update({
+  id: '/authorize',
+  path: '/authorize',
+  getParentRoute: () => AccountRoute,
 } as any)
 const ApiWebhooksShippingRoute = ApiWebhooksShippingRouteImport.update({
   id: '/api/webhooks/shipping',
   path: '/api/webhooks/shipping',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWebhooksRazorpayRoute = ApiWebhooksRazorpayRouteImport.update({
+  id: '/api/webhooks/razorpay',
+  path: '/api/webhooks/razorpay',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiShopifyAuthRoute = ApiShopifyAuthRouteImport.update({
+  id: '/api/shopify/auth',
+  path: '/api/shopify/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWebhooksShopifyProductsRoute =
+  ApiWebhooksShopifyProductsRouteImport.update({
+    id: '/api/webhooks/shopify/products',
+    path: '/api/webhooks/shopify/products',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiWebhooksShopifyOrdersRoute =
+  ApiWebhooksShopifyOrdersRouteImport.update({
+    id: '/api/webhooks/shopify/orders',
+    path: '/api/webhooks/shopify/orders',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiShopifyAuthCallbackRoute = ApiShopifyAuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => ApiShopifyAuthRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/account': typeof AccountRoute
+  '/account': typeof AccountRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
@@ -279,31 +377,47 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/shipping': typeof ShippingRoute
   '/staff': typeof StaffRouteWithChildren
+  '/subadmin': typeof SubadminRouteWithChildren
   '/terms': typeof TermsRoute
   '/warranty': typeof WarrantyRoute
   '/wishlist': typeof WishlistRoute
+  '/account/authorize': typeof AccountAuthorizeRoute
+  '/account/login': typeof AccountLoginRoute
+  '/account/logout': typeof AccountLogoutRoute
   '/admin/categories': typeof AdminCategoriesRoute
-  '/admin/cj-sync': typeof AdminCjSyncRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/flash-sale': typeof AdminFlashSaleRoute
   '/admin/launch': typeof AdminLaunchRoute
   '/admin/manufacturers': typeof AdminManufacturersRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/admin/products': typeof AdminProductsRoute
+  '/admin/referrals': typeof AdminReferralsRoute
+  '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/shopify': typeof AdminShopifyRoute
   '/admin/staff': typeof AdminStaffRoute
+  '/admin/subadmins': typeof AdminSubadminsRoute
   '/admin/users': typeof AdminUsersRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/subadmin/dropship': typeof SubadminDropshipRoute
+  '/subadmin/history': typeof SubadminHistoryRoute
   '/admin/': typeof AdminIndexRoute
   '/orders/': typeof OrdersIndexRoute
   '/staff/': typeof StaffIndexRoute
+  '/subadmin/': typeof SubadminIndexRoute
+  '/api/shopify/auth': typeof ApiShopifyAuthRouteWithChildren
+  '/api/webhooks/razorpay': typeof ApiWebhooksRazorpayRoute
   '/api/webhooks/shipping': typeof ApiWebhooksShippingRoute
+  '/api/shopify/auth/callback': typeof ApiShopifyAuthCallbackRoute
+  '/api/webhooks/shopify/orders': typeof ApiWebhooksShopifyOrdersRoute
+  '/api/webhooks/shopify/products': typeof ApiWebhooksShopifyProductsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/account': typeof AccountRoute
+  '/account': typeof AccountRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
@@ -323,29 +437,44 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/warranty': typeof WarrantyRoute
   '/wishlist': typeof WishlistRoute
+  '/account/authorize': typeof AccountAuthorizeRoute
+  '/account/login': typeof AccountLoginRoute
+  '/account/logout': typeof AccountLogoutRoute
   '/admin/categories': typeof AdminCategoriesRoute
-  '/admin/cj-sync': typeof AdminCjSyncRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/flash-sale': typeof AdminFlashSaleRoute
   '/admin/launch': typeof AdminLaunchRoute
   '/admin/manufacturers': typeof AdminManufacturersRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/admin/products': typeof AdminProductsRoute
+  '/admin/referrals': typeof AdminReferralsRoute
+  '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/shopify': typeof AdminShopifyRoute
   '/admin/staff': typeof AdminStaffRoute
+  '/admin/subadmins': typeof AdminSubadminsRoute
   '/admin/users': typeof AdminUsersRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/subadmin/dropship': typeof SubadminDropshipRoute
+  '/subadmin/history': typeof SubadminHistoryRoute
   '/admin': typeof AdminIndexRoute
   '/orders': typeof OrdersIndexRoute
   '/staff': typeof StaffIndexRoute
+  '/subadmin': typeof SubadminIndexRoute
+  '/api/shopify/auth': typeof ApiShopifyAuthRouteWithChildren
+  '/api/webhooks/razorpay': typeof ApiWebhooksRazorpayRoute
   '/api/webhooks/shipping': typeof ApiWebhooksShippingRoute
+  '/api/shopify/auth/callback': typeof ApiShopifyAuthCallbackRoute
+  '/api/webhooks/shopify/orders': typeof ApiWebhooksShopifyOrdersRoute
+  '/api/webhooks/shopify/products': typeof ApiWebhooksShopifyProductsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/account': typeof AccountRoute
+  '/account': typeof AccountRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
@@ -364,26 +493,42 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/shipping': typeof ShippingRoute
   '/staff': typeof StaffRouteWithChildren
+  '/subadmin': typeof SubadminRouteWithChildren
   '/terms': typeof TermsRoute
   '/warranty': typeof WarrantyRoute
   '/wishlist': typeof WishlistRoute
+  '/account/authorize': typeof AccountAuthorizeRoute
+  '/account/login': typeof AccountLoginRoute
+  '/account/logout': typeof AccountLogoutRoute
   '/admin/categories': typeof AdminCategoriesRoute
-  '/admin/cj-sync': typeof AdminCjSyncRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/flash-sale': typeof AdminFlashSaleRoute
   '/admin/launch': typeof AdminLaunchRoute
   '/admin/manufacturers': typeof AdminManufacturersRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/admin/products': typeof AdminProductsRoute
+  '/admin/referrals': typeof AdminReferralsRoute
+  '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/shopify': typeof AdminShopifyRoute
   '/admin/staff': typeof AdminStaffRoute
+  '/admin/subadmins': typeof AdminSubadminsRoute
   '/admin/users': typeof AdminUsersRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/subadmin/dropship': typeof SubadminDropshipRoute
+  '/subadmin/history': typeof SubadminHistoryRoute
   '/admin/': typeof AdminIndexRoute
   '/orders/': typeof OrdersIndexRoute
   '/staff/': typeof StaffIndexRoute
+  '/subadmin/': typeof SubadminIndexRoute
+  '/api/shopify/auth': typeof ApiShopifyAuthRouteWithChildren
+  '/api/webhooks/razorpay': typeof ApiWebhooksRazorpayRoute
   '/api/webhooks/shipping': typeof ApiWebhooksShippingRoute
+  '/api/shopify/auth/callback': typeof ApiShopifyAuthCallbackRoute
+  '/api/webhooks/shopify/orders': typeof ApiWebhooksShopifyOrdersRoute
+  '/api/webhooks/shopify/products': typeof ApiWebhooksShopifyProductsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -409,26 +554,42 @@ export interface FileRouteTypes {
     | '/search'
     | '/shipping'
     | '/staff'
+    | '/subadmin'
     | '/terms'
     | '/warranty'
     | '/wishlist'
+    | '/account/authorize'
+    | '/account/login'
+    | '/account/logout'
     | '/admin/categories'
-    | '/admin/cj-sync'
     | '/admin/coupons'
     | '/admin/flash-sale'
     | '/admin/launch'
     | '/admin/manufacturers'
     | '/admin/orders'
+    | '/admin/payments'
     | '/admin/products'
+    | '/admin/referrals'
+    | '/admin/reviews'
+    | '/admin/shopify'
     | '/admin/staff'
+    | '/admin/subadmins'
     | '/admin/users'
     | '/category/$category'
     | '/orders/$orderId'
     | '/product/$slug'
+    | '/subadmin/dropship'
+    | '/subadmin/history'
     | '/admin/'
     | '/orders/'
     | '/staff/'
+    | '/subadmin/'
+    | '/api/shopify/auth'
+    | '/api/webhooks/razorpay'
     | '/api/webhooks/shipping'
+    | '/api/shopify/auth/callback'
+    | '/api/webhooks/shopify/orders'
+    | '/api/webhooks/shopify/products'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -453,23 +614,38 @@ export interface FileRouteTypes {
     | '/terms'
     | '/warranty'
     | '/wishlist'
+    | '/account/authorize'
+    | '/account/login'
+    | '/account/logout'
     | '/admin/categories'
-    | '/admin/cj-sync'
     | '/admin/coupons'
     | '/admin/flash-sale'
     | '/admin/launch'
     | '/admin/manufacturers'
     | '/admin/orders'
+    | '/admin/payments'
     | '/admin/products'
+    | '/admin/referrals'
+    | '/admin/reviews'
+    | '/admin/shopify'
     | '/admin/staff'
+    | '/admin/subadmins'
     | '/admin/users'
     | '/category/$category'
     | '/orders/$orderId'
     | '/product/$slug'
+    | '/subadmin/dropship'
+    | '/subadmin/history'
     | '/admin'
     | '/orders'
     | '/staff'
+    | '/subadmin'
+    | '/api/shopify/auth'
+    | '/api/webhooks/razorpay'
     | '/api/webhooks/shipping'
+    | '/api/shopify/auth/callback'
+    | '/api/webhooks/shopify/orders'
+    | '/api/webhooks/shopify/products'
   id:
     | '__root__'
     | '/'
@@ -493,32 +669,48 @@ export interface FileRouteTypes {
     | '/search'
     | '/shipping'
     | '/staff'
+    | '/subadmin'
     | '/terms'
     | '/warranty'
     | '/wishlist'
+    | '/account/authorize'
+    | '/account/login'
+    | '/account/logout'
     | '/admin/categories'
-    | '/admin/cj-sync'
     | '/admin/coupons'
     | '/admin/flash-sale'
     | '/admin/launch'
     | '/admin/manufacturers'
     | '/admin/orders'
+    | '/admin/payments'
     | '/admin/products'
+    | '/admin/referrals'
+    | '/admin/reviews'
+    | '/admin/shopify'
     | '/admin/staff'
+    | '/admin/subadmins'
     | '/admin/users'
     | '/category/$category'
     | '/orders/$orderId'
     | '/product/$slug'
+    | '/subadmin/dropship'
+    | '/subadmin/history'
     | '/admin/'
     | '/orders/'
     | '/staff/'
+    | '/subadmin/'
+    | '/api/shopify/auth'
+    | '/api/webhooks/razorpay'
     | '/api/webhooks/shipping'
+    | '/api/shopify/auth/callback'
+    | '/api/webhooks/shopify/orders'
+    | '/api/webhooks/shopify/products'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  AccountRoute: typeof AccountRoute
+  AccountRoute: typeof AccountRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   CartRoute: typeof CartRoute
@@ -537,6 +729,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   ShippingRoute: typeof ShippingRoute
   StaffRoute: typeof StaffRouteWithChildren
+  SubadminRoute: typeof SubadminRouteWithChildren
   TermsRoute: typeof TermsRoute
   WarrantyRoute: typeof WarrantyRoute
   WishlistRoute: typeof WishlistRoute
@@ -544,7 +737,11 @@ export interface RootRouteChildren {
   OrdersOrderIdRoute: typeof OrdersOrderIdRoute
   ProductSlugRoute: typeof ProductSlugRoute
   OrdersIndexRoute: typeof OrdersIndexRoute
+  ApiShopifyAuthRoute: typeof ApiShopifyAuthRouteWithChildren
+  ApiWebhooksRazorpayRoute: typeof ApiWebhooksRazorpayRoute
   ApiWebhooksShippingRoute: typeof ApiWebhooksShippingRoute
+  ApiWebhooksShopifyOrdersRoute: typeof ApiWebhooksShopifyOrdersRoute
+  ApiWebhooksShopifyProductsRoute: typeof ApiWebhooksShopifyProductsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -568,6 +765,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/subadmin': {
+      id: '/subadmin'
+      path: '/subadmin'
+      fullPath: '/subadmin'
+      preLoaderRoute: typeof SubadminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/staff': {
@@ -717,6 +921,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/subadmin/': {
+      id: '/subadmin/'
+      path: '/'
+      fullPath: '/subadmin/'
+      preLoaderRoute: typeof SubadminIndexRouteImport
+      parentRoute: typeof SubadminRoute
+    }
     '/staff/': {
       id: '/staff/'
       path: '/'
@@ -737,6 +948,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/subadmin/history': {
+      id: '/subadmin/history'
+      path: '/history'
+      fullPath: '/subadmin/history'
+      preLoaderRoute: typeof SubadminHistoryRouteImport
+      parentRoute: typeof SubadminRoute
+    }
+    '/subadmin/dropship': {
+      id: '/subadmin/dropship'
+      path: '/dropship'
+      fullPath: '/subadmin/dropship'
+      preLoaderRoute: typeof SubadminDropshipRouteImport
+      parentRoute: typeof SubadminRoute
     }
     '/product/$slug': {
       id: '/product/$slug'
@@ -766,6 +991,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/subadmins': {
+      id: '/admin/subadmins'
+      path: '/subadmins'
+      fullPath: '/admin/subadmins'
+      preLoaderRoute: typeof AdminSubadminsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/staff': {
       id: '/admin/staff'
       path: '/staff'
@@ -773,11 +1005,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminStaffRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/shopify': {
+      id: '/admin/shopify'
+      path: '/shopify'
+      fullPath: '/admin/shopify'
+      preLoaderRoute: typeof AdminShopifyRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/reviews': {
+      id: '/admin/reviews'
+      path: '/reviews'
+      fullPath: '/admin/reviews'
+      preLoaderRoute: typeof AdminReviewsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/referrals': {
+      id: '/admin/referrals'
+      path: '/referrals'
+      fullPath: '/admin/referrals'
+      preLoaderRoute: typeof AdminReferralsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/products': {
       id: '/admin/products'
       path: '/products'
       fullPath: '/admin/products'
       preLoaderRoute: typeof AdminProductsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/orders': {
@@ -815,19 +1075,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCouponsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/cj-sync': {
-      id: '/admin/cj-sync'
-      path: '/cj-sync'
-      fullPath: '/admin/cj-sync'
-      preLoaderRoute: typeof AdminCjSyncRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/categories': {
       id: '/admin/categories'
       path: '/categories'
       fullPath: '/admin/categories'
       preLoaderRoute: typeof AdminCategoriesRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/account/logout': {
+      id: '/account/logout'
+      path: '/logout'
+      fullPath: '/account/logout'
+      preLoaderRoute: typeof AccountLogoutRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/login': {
+      id: '/account/login'
+      path: '/login'
+      fullPath: '/account/login'
+      preLoaderRoute: typeof AccountLoginRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/authorize': {
+      id: '/account/authorize'
+      path: '/authorize'
+      fullPath: '/account/authorize'
+      preLoaderRoute: typeof AccountAuthorizeRouteImport
+      parentRoute: typeof AccountRoute
     }
     '/api/webhooks/shipping': {
       id: '/api/webhooks/shipping'
@@ -836,33 +1110,91 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWebhooksShippingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/webhooks/razorpay': {
+      id: '/api/webhooks/razorpay'
+      path: '/api/webhooks/razorpay'
+      fullPath: '/api/webhooks/razorpay'
+      preLoaderRoute: typeof ApiWebhooksRazorpayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/shopify/auth': {
+      id: '/api/shopify/auth'
+      path: '/api/shopify/auth'
+      fullPath: '/api/shopify/auth'
+      preLoaderRoute: typeof ApiShopifyAuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/webhooks/shopify/products': {
+      id: '/api/webhooks/shopify/products'
+      path: '/api/webhooks/shopify/products'
+      fullPath: '/api/webhooks/shopify/products'
+      preLoaderRoute: typeof ApiWebhooksShopifyProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/webhooks/shopify/orders': {
+      id: '/api/webhooks/shopify/orders'
+      path: '/api/webhooks/shopify/orders'
+      fullPath: '/api/webhooks/shopify/orders'
+      preLoaderRoute: typeof ApiWebhooksShopifyOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/shopify/auth/callback': {
+      id: '/api/shopify/auth/callback'
+      path: '/callback'
+      fullPath: '/api/shopify/auth/callback'
+      preLoaderRoute: typeof ApiShopifyAuthCallbackRouteImport
+      parentRoute: typeof ApiShopifyAuthRoute
+    }
   }
 }
 
+interface AccountRouteChildren {
+  AccountAuthorizeRoute: typeof AccountAuthorizeRoute
+  AccountLoginRoute: typeof AccountLoginRoute
+  AccountLogoutRoute: typeof AccountLogoutRoute
+}
+
+const AccountRouteChildren: AccountRouteChildren = {
+  AccountAuthorizeRoute: AccountAuthorizeRoute,
+  AccountLoginRoute: AccountLoginRoute,
+  AccountLogoutRoute: AccountLogoutRoute,
+}
+
+const AccountRouteWithChildren =
+  AccountRoute._addFileChildren(AccountRouteChildren)
+
 interface AdminRouteChildren {
   AdminCategoriesRoute: typeof AdminCategoriesRoute
-  AdminCjSyncRoute: typeof AdminCjSyncRoute
   AdminCouponsRoute: typeof AdminCouponsRoute
   AdminFlashSaleRoute: typeof AdminFlashSaleRoute
   AdminLaunchRoute: typeof AdminLaunchRoute
   AdminManufacturersRoute: typeof AdminManufacturersRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminProductsRoute: typeof AdminProductsRoute
+  AdminReferralsRoute: typeof AdminReferralsRoute
+  AdminReviewsRoute: typeof AdminReviewsRoute
+  AdminShopifyRoute: typeof AdminShopifyRoute
   AdminStaffRoute: typeof AdminStaffRoute
+  AdminSubadminsRoute: typeof AdminSubadminsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminCategoriesRoute: AdminCategoriesRoute,
-  AdminCjSyncRoute: AdminCjSyncRoute,
   AdminCouponsRoute: AdminCouponsRoute,
   AdminFlashSaleRoute: AdminFlashSaleRoute,
   AdminLaunchRoute: AdminLaunchRoute,
   AdminManufacturersRoute: AdminManufacturersRoute,
   AdminOrdersRoute: AdminOrdersRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
   AdminProductsRoute: AdminProductsRoute,
+  AdminReferralsRoute: AdminReferralsRoute,
+  AdminReviewsRoute: AdminReviewsRoute,
+  AdminShopifyRoute: AdminShopifyRoute,
   AdminStaffRoute: AdminStaffRoute,
+  AdminSubadminsRoute: AdminSubadminsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
@@ -879,10 +1211,38 @@ const StaffRouteChildren: StaffRouteChildren = {
 
 const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
 
+interface SubadminRouteChildren {
+  SubadminDropshipRoute: typeof SubadminDropshipRoute
+  SubadminHistoryRoute: typeof SubadminHistoryRoute
+  SubadminIndexRoute: typeof SubadminIndexRoute
+}
+
+const SubadminRouteChildren: SubadminRouteChildren = {
+  SubadminDropshipRoute: SubadminDropshipRoute,
+  SubadminHistoryRoute: SubadminHistoryRoute,
+  SubadminIndexRoute: SubadminIndexRoute,
+}
+
+const SubadminRouteWithChildren = SubadminRoute._addFileChildren(
+  SubadminRouteChildren,
+)
+
+interface ApiShopifyAuthRouteChildren {
+  ApiShopifyAuthCallbackRoute: typeof ApiShopifyAuthCallbackRoute
+}
+
+const ApiShopifyAuthRouteChildren: ApiShopifyAuthRouteChildren = {
+  ApiShopifyAuthCallbackRoute: ApiShopifyAuthCallbackRoute,
+}
+
+const ApiShopifyAuthRouteWithChildren = ApiShopifyAuthRoute._addFileChildren(
+  ApiShopifyAuthRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  AccountRoute: AccountRoute,
+  AccountRoute: AccountRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   CartRoute: CartRoute,
@@ -901,6 +1261,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   ShippingRoute: ShippingRoute,
   StaffRoute: StaffRouteWithChildren,
+  SubadminRoute: SubadminRouteWithChildren,
   TermsRoute: TermsRoute,
   WarrantyRoute: WarrantyRoute,
   WishlistRoute: WishlistRoute,
@@ -908,7 +1269,11 @@ const rootRouteChildren: RootRouteChildren = {
   OrdersOrderIdRoute: OrdersOrderIdRoute,
   ProductSlugRoute: ProductSlugRoute,
   OrdersIndexRoute: OrdersIndexRoute,
+  ApiShopifyAuthRoute: ApiShopifyAuthRouteWithChildren,
+  ApiWebhooksRazorpayRoute: ApiWebhooksRazorpayRoute,
   ApiWebhooksShippingRoute: ApiWebhooksShippingRoute,
+  ApiWebhooksShopifyOrdersRoute: ApiWebhooksShopifyOrdersRoute,
+  ApiWebhooksShopifyProductsRoute: ApiWebhooksShopifyProductsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

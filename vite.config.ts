@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => {
       alias: {
         "@": `${process.cwd()}/src`,
         "@launch-template": path.resolve(process.cwd(), "src/launch-template"),
+        "@flash-sale-template": path.resolve(process.cwd(), "src/flash-sale-template"),
         "lucide-react": path.resolve(process.cwd(), "node_modules/lucide-react"),
         gsap: path.resolve(process.cwd(), "node_modules/gsap"),
       },
@@ -74,7 +75,7 @@ export default defineConfig(({ mode }) => {
               "Referrer-Policy": "strict-origin-when-cross-origin",
               "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
               "X-DNS-Prefetch-Control": "off",
-              "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.razorpay.com https://developers.cjdropshipping.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; base-uri 'self'; form-action 'self'",
+              "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.razorpay.com https://*.myshopify.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; base-uri 'self'; form-action 'self'",
             },
           },
         },

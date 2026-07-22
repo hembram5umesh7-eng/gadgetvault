@@ -15,6 +15,7 @@ import { useAuthedServerFn } from "@/lib/use-authed-server-fn";
 import { cancelCustomerOrder } from "@/lib/order.functions";
 import { canCustomerCancel, type OrderStatus } from "@/lib/order-utils";
 import { toast } from "sonner";
+import { friendlyShopperError } from "@/lib/customer-messages";
 import { XCircle } from "lucide-react";
 
 export function OrderCancelButton({
@@ -40,12 +41,11 @@ export function OrderCancelButton({
     try {
       const res = await cancelFn({ data: { orderId, reason: reason || undefined } });
       toast.success(`Order ${res.orderNumber} cancelled`);
-      if (res.cjNote) toast.info(res.cjNote, { duration: 7000 });
       if (res.refundNote) toast.info(res.refundNote, { duration: 8000 });
       setOpen(false);
       onCancelled?.();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not cancel order");
+      toast.error(friendlyShopperError(err, "Could not cancel this order. Please contact support."));
     } finally {
       setLoading(false);
     }

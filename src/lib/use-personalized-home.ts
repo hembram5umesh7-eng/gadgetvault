@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import type { ProductCardData } from "@/components/product-card";
-import { PRODUCT_CARD_SELECT } from "@/lib/product-pricing";
+import { fetchProductBySlug, fetchProductCards, fetchProductsByCategory, searchProducts } from "@/lib/products";
 import {
   getPersonalizationSignals,
   getRecentSearches,
@@ -12,9 +11,18 @@ import {
   type SearchHistoryEntry,
 } from "@/lib/user-personalization";
 
-function orderByIds(products: ProductCardData[], ids: string[]): ProductCardData[] {
-  const map = new Map(products.map((p) => [p.id, p]));
-  return ids.map((id) => map.get(id)).filter(Boolean) as ProductCardData[];
+function orderBySlugs(products: ProductCardData[], slugs: string[]): ProductCardData[] {
+  const map = new Map(products.map((p) => [p.slug, p]));
+  return slugs.map((slug) => map.get(slug)).filter(Boolean) as ProductCardData[];
+}
+
+async function resolveViewedProducts(views: RecentlyViewedEntry[]): Promise<ProductCardData[]> {
+  const slugs = views.map((v) => v.slug).slice(0, 12);
+  if (!slugs.length) return [];
+
+  const fetched = await Promise.all(slugs.map((slug) => fetchProductBySlug(slug)));
+  const cards = fetched.filter((p): p is NonNullable<typeof p> => Boolean(p));
+  return orderBySlugs(cards, slugs);
 }
 
 export function usePersonalizedHome() {
@@ -25,7 +33,7 @@ export function usePersonalizedHome() {
   const [recommended, setRecommended] = useState<ProductCardData[]>([]);
   const [recentSearches, setRecentSearches] = useState<SearchHistoryEntry[]>([]);
   const [viewMeta, setViewMeta] = useState<RecentlyViewedEntry[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -36,42 +44,24 @@ export function usePersonalizedHome() {
     setRecentSearches(searches);
     setViewMeta(views);
 
-    const viewedIdsOrdered = views.map((v) => v.id).slice(0, 12);
-    let viewedProducts: ProductCardData[] = [];
-    if (viewedIdsOrdered.length) {
-      const { data } = await supabase
-        .from("products")
-        .select(PRODUCT_CARD_SELECT)
-        .in("id", viewedIdsOrdered)
-        .eq("active", true);
-      viewedProducts = orderByIds((data as ProductCardData[]) ?? [], viewedIdsOrdered);
-    }
+    const viewedProducts = await resolveViewedProducts(views);
     setRecentlyViewed(viewedProducts);
 
     let recs: ProductCardData[] = [];
     const exclude = new Set(viewedIds);
 
     if (categories.length) {
-      const { data } = await supabase
-        .from("products")
-        .select(PRODUCT_CARD_SELECT)
-        .eq("active", true)
-        .in("category", categories.slice(0, 3))
-        .order("created_at", { ascending: false })
-        .limit(16);
-      recs = ((data as ProductCardData[]) ?? []).filter((p) => !exclude.has(p.id));
+      for (const cat of categories.slice(0, 2)) {
+        const byCat = await fetchProductsByCategory(cat);
+        recs.push(...byCat.filter((p) => !exclude.has(p.id) && !recs.some((r) => r.id === p.id)));
+        if (recs.length >= 8) break;
+      }
     }
 
     if (recs.length < 4 && queries.length) {
       const q = queries[0].replace(/[%_\\]/g, "").slice(0, 60);
       if (q) {
-        const { data } = await supabase
-          .from("products")
-          .select(PRODUCT_CARD_SELECT)
-          .eq("active", true)
-          .or(`name.ilike.%${q}%,brand.ilike.%${q}%,category.ilike.%${q}%`)
-          .limit(12);
-        const extra = ((data as ProductCardData[]) ?? []).filter(
+        const extra = (await searchProducts({ q })).filter(
           (p) => !exclude.has(p.id) && !recs.some((r) => r.id === p.id),
         );
         recs = [...recs, ...extra];
@@ -79,15 +69,8 @@ export function usePersonalizedHome() {
     }
 
     if (recs.length < 4) {
-      const { data } = await supabase
-        .from("products")
-        .select(PRODUCT_CARD_SELECT)
-        .eq("active", true)
-        .eq("is_bestseller", true)
-        .limit(8);
-      const extra = ((data as ProductCardData[]) ?? []).filter(
-        (p) => !exclude.has(p.id) && !recs.some((r) => r.id === p.id),
-      );
+      const best = await fetchProductCards({ limit: 8, bestseller: true });
+      const extra = best.filter((p) => !exclude.has(p.id) && !recs.some((r) => r.id === p.id));
       recs = [...recs, ...extra];
     }
 
@@ -109,5 +92,6 @@ export function usePersonalizedHome() {
     recentSearches,
     viewMeta,
     hasPersonalization: recentlyViewed.length > 0 || recentSearches.length > 0,
+    hasViewHistory: viewMeta.length > 0,
   };
 }

@@ -1,4 +1,12 @@
 {
   "framework": "tanstack-start",
-  "buildCommand": "npm run build"
+  "buildCommand": "npm run build",
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "www.gadgetvault.in" }],
+      "destination": "https://gadgetvault.in/$1",
+      "permanent": true
+    }
+  ]
 }

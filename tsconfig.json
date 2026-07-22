@@ -22,7 +22,8 @@
     "noUncheckedSideEffectImports": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@launch-template/*": ["./src/launch-template/*"]
+      "@launch-template/*": ["./src/launch-template/*"],
+      "@flash-sale-template/*": ["./src/flash-sale-template/*"]
     }
   }
 }

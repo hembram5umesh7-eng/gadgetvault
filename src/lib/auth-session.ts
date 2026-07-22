@@ -2,9 +2,9 @@ import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { authStorageKey, persistSession, readCachedSession } from "@/lib/auth-storage";
 
-export type AppRole = "user" | "admin" | "staff" | "manufacturer";
+export type AppRole = "user" | "admin" | "staff" | "sub_admin" | "manufacturer";
 
-const VALID_ROLES = new Set<AppRole>(["user", "admin", "staff", "manufacturer"]);
+const VALID_ROLES = new Set<AppRole>(["user", "admin", "staff", "sub_admin", "manufacturer"]);
 
 export { authStorageKey, persistSession, readCachedSession };
 
@@ -33,23 +33,28 @@ export function canAccessAdminPanel(roles: AppRole[]) {
   return roles.includes("admin") || roles.includes("staff");
 }
 
+export function canAccessSubAdminPanel(roles: AppRole[]) {
+  return roles.includes("sub_admin");
+}
+
 export function isSuperAdmin(roles: AppRole[]) {
   return roles.includes("admin");
 }
 
 export function isShopperAccount(roles: string[]): boolean {
-  return !roles.some((r) => r === "admin" || r === "staff" || r === "manufacturer");
+  return !roles.some((r) => r === "admin" || r === "staff" || r === "sub_admin" || r === "manufacturer");
 }
 
 export function resolvePostLoginRedirect(requested: string, roles: AppRole[]): string {
   const isShopper =
     roles.length === 0 ||
     (roles.length === 1 && roles[0] === "user") ||
-    (!roles.includes("admin") && !roles.includes("staff") && !roles.includes("manufacturer"));
+    (!roles.includes("admin") && !roles.includes("staff") && !roles.includes("sub_admin") && !roles.includes("manufacturer"));
 
   if (requested && requested !== "/") return requested;
   if (isShopper) return "/account";
   if (roles.includes("admin")) return "/admin";
+  if (roles.includes("sub_admin")) return "/subadmin";
   if (roles.includes("staff")) return "/staff";
   if (roles.includes("manufacturer")) return "/partner";
   return "/";

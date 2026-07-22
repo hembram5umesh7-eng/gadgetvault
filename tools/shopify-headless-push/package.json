@@ -1,0 +1,9 @@
+{
+  "name": "shopify-headless-push",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@shopify/hydrogen": "2024.7.9",
+    "vite": "^6.0.0"
+  }
+}

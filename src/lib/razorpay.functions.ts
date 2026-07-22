@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { processCJFulfillment } from "@/lib/cj-dropshipping.functions";
+import { resolveRazorpayKeyId, resolveRazorpayKeySecret } from "@/lib/razorpay-token-store";
 import { createHmac, timingSafeEqual } from "crypto";
 import { z } from "zod";
 
@@ -11,9 +11,9 @@ export const createRazorpayOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => createOrderInput.parse(input))
   .handler(async ({ data, context }) => {
-    const keyId = process.env.RAZORPAY_KEY_ID;
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
-    if (!keyId || !keySecret) throw new Error("Razorpay keys not configured");
+    const keyId = await resolveRazorpayKeyId();
+    const keySecret = await resolveRazorpayKeySecret();
+    if (!keyId || !keySecret) throw new Error("Razorpay not configured — Admin → Payments mein keys save karo");
 
     const { supabase, userId } = context;
     const { data: order, error } = await supabase
@@ -65,8 +65,8 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => verifyInput.parse(input))
   .handler(async ({ data, context }) => {
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
-    if (!keySecret) throw new Error("Razorpay secret not configured");
+    const keySecret = await resolveRazorpayKeySecret();
+    if (!keySecret) throw new Error("Razorpay not configured");
     const { userId } = context;
 
     // Verify signature
@@ -101,8 +101,6 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
       amount: order.total,
       status: "paid",
     });
-
-    void processCJFulfillment(data.orderId).catch(() => {});
 
     return { success: true };
   });

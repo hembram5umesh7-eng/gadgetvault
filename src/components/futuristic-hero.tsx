@@ -49,7 +49,7 @@ export function FuturisticHero({ slides, defaultCategory, productCount = 0 }: Fu
             <div className="mt-6 flex flex-wrap gap-2">
               {[
                 { icon: ShieldTick, text: "Secure checkout" },
-                { icon: Cpu, text: "CJ fulfilled" },
+                { icon: Cpu, text: "Partner fulfilled" },
                 { icon: Flash, text: "Est. " + DELIVERY_ESTIMATES.totalTypical },
               ].map((chip) => (
                 <span key={chip.text} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/20 border border-white/15 text-xs font-semibold backdrop-blur-sm">

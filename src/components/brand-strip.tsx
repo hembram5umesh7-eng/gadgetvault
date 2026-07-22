@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { CJ_TOP_BRANDS, type TopBrand } from "@/lib/brands";
+import { STORE_TOP_BRANDS, type TopBrand } from "@/lib/brands";
 import { cn } from "@/lib/utils";
 import { Flash } from "iconsax-react";
 
@@ -79,7 +79,7 @@ export function BrandStrip() {
           if (
             brand &&
             brand.length > 2 &&
-            !/cj dropshipping/i.test(brand) &&
+            !/cj dropshipping|dropshipman/i.test(brand) &&
             !seen.has(brand.toLowerCase())
           ) {
             seen.add(brand.toLowerCase());
@@ -97,7 +97,7 @@ export function BrandStrip() {
   }, []);
 
   const allBrands = useMemo(() => {
-    const merged = [...CJ_TOP_BRANDS];
+    const merged = [...STORE_TOP_BRANDS];
     for (const b of liveBrands) {
       if (!merged.some((m) => m.name.toLowerCase() === b.name.toLowerCase())) {
         merged.push(b);
@@ -111,8 +111,8 @@ export function BrandStrip() {
     let left = allBrands.slice(0, mid);
     let right = allBrands.slice(mid);
     if (right.length === 0) right = [...left];
-    if (left.length < 4) left = [...left, ...CJ_TOP_BRANDS.slice(0, 4 - left.length)];
-    if (right.length < 4) right = [...right, ...CJ_TOP_BRANDS.slice(0, 4 - right.length)];
+    if (left.length < 4) left = [...left, ...STORE_TOP_BRANDS.slice(0, 4 - left.length)];
+    if (right.length < 4) right = [...right, ...STORE_TOP_BRANDS.slice(0, 4 - right.length)];
     return { rowLeft: left, rowRight: right };
   }, [allBrands]);
 
@@ -125,13 +125,13 @@ export function BrandStrip() {
         <div className="text-center sm:text-left">
           <div className="inline-flex items-center gap-2 mb-2">
             <Flash size={16} variant="Bold" color="var(--primary)" />
-            <span className="premium-eyebrow">CJ sourced partners</span>
+            <span className="premium-eyebrow">Trusted partners</span>
           </div>
           <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
             Shop Top Brands
           </h2>
           <p className="mt-1.5 text-sm text-muted-foreground max-w-xl mx-auto sm:mx-0">
-            Brands & ranges we deal in — fulfilled through CJ Dropshipping partners.
+            Brands & ranges we deal in — fulfilled via trusted partners across India.
           </p>
         </div>
       </div>
@@ -142,7 +142,7 @@ export function BrandStrip() {
       </div>
 
       <p className="text-center text-[10px] text-muted-foreground/80 mt-5 px-4">
-        Fulfilled via CJ Dropshipping · Stock varies by partner
+        Fulfilled via partner network · Pan-India courier · Stock varies by listing
       </p>
     </section>
   );

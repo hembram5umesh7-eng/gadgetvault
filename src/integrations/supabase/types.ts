@@ -143,9 +143,12 @@ export type Database = {
           created_at: string
           id: string
           order_id: string
-          product_id: string
+          product_id: string | null
           product_name: string
+          product_slug: string | null
           quantity: number
+          shopify_product_id: string | null
+          shopify_variant_id: string | null
           size: string
           unit_price: number
           variant_id: string | null
@@ -155,9 +158,12 @@ export type Database = {
           created_at?: string
           id?: string
           order_id: string
-          product_id: string
+          product_id?: string | null
           product_name: string
+          product_slug?: string | null
           quantity?: number
+          shopify_product_id?: string | null
+          shopify_variant_id?: string | null
           size: string
           unit_price: number
           variant_id?: string | null
@@ -167,9 +173,12 @@ export type Database = {
           created_at?: string
           id?: string
           order_id?: string
-          product_id?: string
+          product_id?: string | null
           product_name?: string
+          product_slug?: string | null
           quantity?: number
+          shopify_product_id?: string | null
+          shopify_variant_id?: string | null
           size?: string
           unit_price?: number
           variant_id?: string | null

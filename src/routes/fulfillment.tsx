@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PolicyLayout, PolicySection } from "@/components/policy-layout";
 import { STORE } from "@/lib/store-info";
-import { CJ_FULFILLMENT_SUMMARY, DELIVERY_ESTIMATES, LEGAL_LAST_UPDATED, NO_FRAUD_CLAUSE, contactBlock } from "@/lib/legal-copy";
+import { SHOPIFY_FULFILLMENT_SUMMARY, DELIVERY_ESTIMATES, LEGAL_LAST_UPDATED, NO_FRAUD_CLAUSE, contactBlock } from "@/lib/legal-copy";
 
 export const Route = createFileRoute("/fulfillment")({ component: FulfillmentPage });
 
@@ -9,11 +9,11 @@ function FulfillmentPage() {
   return (
     <PolicyLayout
       title="Fulfillment & Dropshipping Policy"
-      subtitle="How orders are sourced, processed, and shipped — including CJ Dropshipping."
+      subtitle="How orders are sourced, processed, and shipped — via Shopify suppliers."
       lastUpdated={LEGAL_LAST_UPDATED}
     >
       <PolicySection title="1. Business Model Disclosure">
-        <p>{CJ_FULFILLMENT_SUMMARY}</p>
+        <p>{SHOPIFY_FULFILLMENT_SUMMARY}</p>
         <p className="mt-2">
           Product images, descriptions, and specifications are provided by suppliers. We display this information in good faith but
           minor variations in colour, packaging, or accessories may occur.

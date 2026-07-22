@@ -4,22 +4,26 @@ import { useAuth } from "@/lib/auth-context";
 import { syncSupabaseSession } from "@/lib/auth-session";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import {
-  LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Truck, ArrowLeft, UserCog, CloudDownload, Tag, Rocket, Zap,
+  LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Truck, ArrowLeft, UserCog, Tag, Rocket, Zap, Gift, Star, Plug, CreditCard, UserPlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { label: "Dashboard", to: "/admin", icon: LayoutDashboard, exact: true as const, superOnly: false },
-  { label: "Launch", to: "/admin/launch", icon: Rocket, exact: false as const, superOnly: false },
-  { label: "Flash Sale", to: "/admin/flash-sale", icon: Zap, exact: false as const, superOnly: false },
-  { label: "Products", to: "/admin/products", icon: Package, exact: false as const, superOnly: false },
-  { label: "CJ Import", to: "/admin/cj-sync", icon: CloudDownload, exact: false as const, superOnly: false },
-  { label: "Coupons", to: "/admin/coupons", icon: Tag, exact: false as const, superOnly: false },
-  { label: "Categories", to: "/admin/categories", icon: FolderTree, exact: false as const, superOnly: false },
-  { label: "Orders", to: "/admin/orders", icon: ShoppingCart, exact: false as const, superOnly: false },
-  { label: "Suppliers", to: "/admin/manufacturers", icon: Truck, exact: false as const, superOnly: false },
-  { label: "Customers", to: "/admin/users", icon: Users, exact: false as const, superOnly: false },
-  { label: "Staff / Workers", to: "/admin/staff", icon: UserCog, exact: false as const, superOnly: true },
+  { label: "Dashboard", hint: "Overview", to: "/admin", icon: LayoutDashboard, exact: true as const, superOnly: false },
+  { label: "Orders", hint: "Manage orders", to: "/admin/orders", icon: ShoppingCart, exact: false as const, superOnly: false },
+  { label: "Products", hint: "Add / edit", to: "/admin/products", icon: Package, exact: false as const, superOnly: false },
+  { label: "Categories", hint: "Nav categories", to: "/admin/categories", icon: FolderTree, exact: false as const, superOnly: false },
+  { label: "Coupons", hint: "Discount codes", to: "/admin/coupons", icon: Tag, exact: false as const, superOnly: false },
+  { label: "Flash Sale", hint: "Sale prices", to: "/admin/flash-sale", icon: Zap, exact: false as const, superOnly: false },
+  { label: "Reviews", hint: "Moderate", to: "/admin/reviews", icon: Star, exact: false as const, superOnly: false },
+  { label: "Customers", hint: "User list", to: "/admin/users", icon: Users, exact: false as const, superOnly: false },
+  { label: "Suppliers", hint: "Manufacturers", to: "/admin/manufacturers", icon: Truck, exact: false as const, superOnly: false },
+  { label: "Payments", hint: "Razorpay", to: "/admin/payments", icon: CreditCard, exact: false as const, superOnly: false },
+  { label: "Shopify", hint: "Background sync", to: "/admin/shopify", icon: Plug, exact: false as const, superOnly: false },
+  { label: "Launch", hint: "Countdown", to: "/admin/launch", icon: Rocket, exact: false as const, superOnly: false },
+  { label: "Referrals", hint: "Invite program", to: "/admin/referrals", icon: Gift, exact: false as const, superOnly: false },
+  { label: "Staff", hint: "Workers", to: "/admin/staff", icon: UserCog, exact: false as const, superOnly: true },
+  { label: "Sub-Admins", hint: "Dropship push", to: "/admin/subadmins", icon: UserPlus, exact: false as const, superOnly: true },
 ] as const;
 
 function PanelLoading({ message, children }: { message?: string; children?: React.ReactNode }) {
@@ -48,16 +52,16 @@ export function AdminShell({
   superAdminOnly?: boolean;
 }) {
   const navigate = useNavigate();
-  const { user, canAccessAdmin, isAdmin, ready } = useAuth();
+  const { user, canAccessAdmin, isAdmin, isSubAdmin, ready } = useAuth();
 
   const navItems = NAV.filter((n) => !n.superOnly || isAdmin);
 
   useEffect(() => {
     if (!ready) return;
     if (!user) navigate({ to: "/auth", search: { redirect } });
-    else if (!canAccessAdmin) navigate({ to: "/" });
+    else if (!canAccessAdmin) navigate({ to: isSubAdmin ? "/subadmin" : "/" });
     else if (superAdminOnly && !isAdmin) navigate({ to: "/admin" });
-  }, [ready, user, canAccessAdmin, isAdmin, superAdminOnly, navigate, redirect]);
+  }, [ready, user, canAccessAdmin, isAdmin, isSubAdmin, superAdminOnly, navigate, redirect]);
 
   useEffect(() => {
     if (ready && user && canAccessAdmin) void syncSupabaseSession();
@@ -104,8 +108,13 @@ export function AdminShell({
                   activeProps={{ className: "bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary" }}
                   activeOptions={{ exact: n.exact }}
                 >
-                  <n.icon className="h-4 w-4" />
-                  {n.label}
+                  <n.icon className="h-4 w-4 shrink-0" />
+                  <span className="flex flex-col leading-tight">
+                    <span>{n.label}</span>
+                    {"hint" in n && (
+                      <span className="text-[10px] font-normal opacity-70">{n.hint}</span>
+                    )}
+                  </span>
                 </Link>
               ))}
               <Link to="/" className="flex items-center gap-2 px-3 py-2 mt-4 text-sm text-muted-foreground hover:text-foreground">

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { ReferralCard } from "@/components/referral-card";
 import { Package, ShoppingBag, ChevronRight, MapPin, Trash2 } from "lucide-react";
 import { formatINR, STATUS_LABEL, type OrderStatus } from "@/lib/order-utils";
 
@@ -177,6 +178,8 @@ function Account() {
               </div>
             </section>
           )}
+
+          <ReferralCard />
 
           <section id="profile" className="bg-card border rounded-xl p-5 space-y-4 mb-6 scroll-mt-24">
             <h2 className="font-bold flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> Profile details</h2>

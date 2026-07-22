@@ -1,13 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { searchProducts } from "@/lib/products";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { ProductCard, type ProductCardData } from "@/components/product-card";
 import { useCategories } from "@/lib/categories";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { PRODUCT_CARD_SELECT } from "@/lib/product-pricing";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth-context";
 import { recordSearch } from "@/lib/user-personalization";
 
@@ -36,21 +36,7 @@ function SearchPage() {
 
   useEffect(() => {
     setLoading(true);
-    let query = supabase
-      .from("products")
-      .select(PRODUCT_CARD_SELECT)
-      .eq("active", true);
-
-    if (q.trim()) query = query.or(`name.ilike.%${q}%,brand.ilike.%${q}%,category.ilike.%${q}%`);
-    if (localCat) query = query.eq("category", localCat);
-    if (priceMin) query = query.gte("base_price", Number(priceMin));
-    if (priceMax) query = query.lte("base_price", Number(priceMax));
-
-    query.then(({ data }) => {
-      let list = (data as ProductCardData[]) ?? [];
-      if (localSort === "price-asc") list = [...list].sort((a, b) => a.base_price - b.base_price);
-      if (localSort === "price-desc") list = [...list].sort((a, b) => b.base_price - a.base_price);
-      if (localSort === "name") list = [...list].sort((a, b) => a.name.localeCompare(b.name));
+    searchProducts({ q, category: localCat, min: Number(priceMin) || 0, max: Number(priceMax) || 0, sort: localSort }).then((list) => {
       setProducts(list);
       setLoading(false);
     });

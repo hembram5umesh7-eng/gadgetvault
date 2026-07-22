@@ -3,14 +3,15 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { canCustomerCancel, type OrderStatus } from "@/lib/order-utils";
-import { processCJOrderCancel } from "@/lib/cj-dropshipping.functions";
+import { cancelShopifyOrderForGadgetVault } from "@/integrations/shopify/admin";
+import { refundPaidOrder } from "@/lib/razorpay-refund";
 
 const cancelInput = z.object({
   orderId: z.string().uuid(),
   reason: z.string().trim().max(500).optional(),
 });
 
-/** Customer cancels own order before it is packed/shipped. */
+/** Customer cancels own order — auto Razorpay refund + Shopify sync. */
 export const cancelCustomerOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => cancelInput.parse(input))
@@ -19,7 +20,7 @@ export const cancelCustomerOrder = createServerFn({ method: "POST" })
 
     const { data: order, error: fetchErr } = await supabaseAdmin
       .from("orders")
-      .select("id, user_id, status, payment_status, payment_method, order_number, cj_order_id")
+      .select("id, user_id, status, payment_status, payment_method, order_number, shopify_order_id, shopify_draft_order_id")
       .eq("id", data.orderId)
       .single();
 
@@ -34,7 +35,36 @@ export const cancelCustomerOrder = createServerFn({ method: "POST" })
 
     const note = data.reason?.trim()
       ? `Customer cancelled: ${data.reason.trim()}`
-      : "Customer cancelled from account";
+      : "Customer cancelled from GadgetVault";
+
+    let refundNote: string | undefined;
+    if (order.payment_status === "paid" && order.payment_method === "razorpay") {
+      try {
+        const refund = await refundPaidOrder({
+          orderId: order.id,
+          orderNumber: order.order_number,
+          reason: note,
+        });
+        refundNote = refund.message;
+      } catch (err) {
+        refundNote = err instanceof Error ? err.message : "Refund could not be started — support will contact you";
+      }
+    } else if (order.payment_method === "cod") {
+      refundNote = "COD order cancelled — no payment was collected.";
+    }
+
+    const shopifyId = order.shopify_order_id || order.shopify_draft_order_id;
+    if (shopifyId) {
+      try {
+        await cancelShopifyOrderForGadgetVault({
+          shopifyOrderId: order.shopify_order_id,
+          shopifyDraftOrderId: order.shopify_draft_order_id,
+          note,
+        });
+      } catch (err) {
+        console.error("[cancel] Shopify sync failed:", err);
+      }
+    }
 
     const { error: updErr } = await supabaseAdmin
       .from("orders")
@@ -46,21 +76,9 @@ export const cancelCustomerOrder = createServerFn({ method: "POST" })
 
     if (updErr) throw new Error(updErr.message);
 
-    let cjNote: string | undefined;
-    if (order.cj_order_id) {
-      const cjRes = await processCJOrderCancel(data.orderId, note);
-      cjNote = cjRes.cjCancelled
-        ? "Supplier (CJ) order cancelled automatically."
-        : "Local cancel done — admin may need to cancel in CJ dashboard if order was already processing.";
-    }
-
     return {
       ok: true as const,
       orderNumber: order.order_number,
-      cjNote,
-      refundNote:
-        order.payment_status === "paid"
-          ? "Your payment refund will be processed within 5–7 business days."
-          : undefined,
+      refundNote,
     };
   });

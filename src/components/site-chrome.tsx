@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Cpu, LogOut, Menu, X, Mail, Phone, ShieldCheck, Truck,
   UserRound, Search, Heart, LayoutGrid, ShoppingCart,
@@ -36,47 +36,61 @@ function HeaderSearchForm({
   onSubmit,
   className,
   inputClassName,
+  inputRef,
+  onClose,
 }: {
   q: string;
   setQ: (v: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   className?: string;
   inputClassName?: string;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
+  onClose?: () => void;
 }) {
   return (
     <form onSubmit={onSubmit} className={cn("w-full min-w-0", className)}>
-      <div className="relative w-full min-w-0">
-        <Search
-          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground shrink-0"
-          strokeWidth={2.5}
-        />
-        <Input
-          type="search"
-          enterKeyHint="search"
-          placeholder="Search products…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          className={cn(
-            "h-10 w-full min-w-0 pl-9 pr-3 rounded-xl bg-muted/60 border-border/50",
-            "focus-visible:bg-background focus-visible:ring-primary/30",
-            inputClassName,
-          )}
-        />
+      <div className="relative w-full min-w-0 flex items-center gap-2">
+        <div className="relative flex-1 min-w-0">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground shrink-0"
+            strokeWidth={2.5}
+          />
+          <Input
+            ref={inputRef}
+            type="search"
+            enterKeyHint="search"
+            placeholder="Search products…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            className={cn(
+              "h-10 w-full min-w-0 pl-9 pr-3 text-sm rounded-xl bg-background border-border",
+              "focus-visible:ring-primary/30",
+              inputClassName,
+            )}
+          />
+        </div>
+        {onClose && (
+          <Button type="button" variant="ghost" size="icon" className="shrink-0 h-10 w-10 rounded-xl" onClick={onClose} aria-label="Close search">
+            <X className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </form>
   );
 }
 
 export function SiteHeader() {
-  const { user, isAdmin, isStaff, isManufacturer, signOut } = useAuth();
+  const { user, isAdmin, isStaff, isSubAdmin, isManufacturer, signOut } = useAuth();
   const { count } = useCart();
   const { count: wishCount } = useWishlist();
   const { count: compareCount } = useCompare();
   const { categories } = useCategories();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [q, setQ] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchPanelRef = useRef<HTMLDivElement>(null);
 
   const navItems = categories.length
     ? categories.filter((c) => c.slug).slice(0, 3).map((c) => ({ label: c.name, slug: c.slug }))
@@ -88,8 +102,43 @@ export function SiteHeader() {
     recordSearch(user?.id ?? null, q.trim());
     navigate({ to: "/search", search: { q: q.trim() } });
     setMobileOpen(false);
-    setMobileSearchOpen(false);
+    setSearchOpen(false);
   };
+
+  const closeSearch = useCallback(() => {
+    setSearchOpen(false);
+    setQ("");
+  }, []);
+
+  const openSearch = useCallback(() => {
+    setSearchOpen(true);
+    setMobileOpen(false);
+  }, []);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    const t = window.setTimeout(() => searchInputRef.current?.focus(), 50);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeSearch();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.clearTimeout(t);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [searchOpen, closeSearch]);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    const onPointerDown = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (searchPanelRef.current && !searchPanelRef.current.contains(target)) {
+        closeSearch();
+      }
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [searchOpen, closeSearch]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/95 backdrop-blur-xl shadow-sm">
@@ -128,18 +177,15 @@ export function SiteHeader() {
             ))}
           </nav>
 
-          <div className="hidden xl:flex flex-1 min-w-0 max-w-md mx-2">
-            <HeaderSearchForm q={q} setQ={setQ} onSubmit={handleSearch} />
-          </div>
-
-          <div className="flex items-center gap-0.5 shrink-0 ml-auto xl:ml-0">
+          <div className="flex items-center gap-0.5 shrink-0 ml-auto">
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="xl:hidden rounded-xl h-10 w-10 p-0"
-              onClick={() => setMobileSearchOpen((v) => !v)}
-              aria-label="Search"
+              className={cn("rounded-xl h-10 w-10 p-0", searchOpen && "bg-primary/10 text-primary")}
+              onClick={() => (searchOpen ? closeSearch() : openSearch())}
+              aria-label="Search products"
+              aria-expanded={searchOpen}
             >
               <Search className="h-5 w-5" strokeWidth={2.5} />
             </Button>
@@ -167,6 +213,12 @@ export function SiteHeader() {
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => navigate({ to: "/staff" })}>Worker Portal</DropdownMenuItem>
+                    </>
+                  )}
+                  {isSubAdmin && !isAdmin && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate({ to: "/subadmin" })}>Sub-Admin Portal</DropdownMenuItem>
                     </>
                   )}
                   {isManufacturer && (
@@ -258,15 +310,17 @@ export function SiteHeader() {
           </div>
         </div>
 
-        {/* Tablet: full-width search row (md–xl) */}
-        <div className="hidden md:block xl:hidden pb-3 pt-0">
-          <HeaderSearchForm q={q} setQ={setQ} onSubmit={handleSearch} />
-        </div>
-
-        {/* Mobile: expandable search */}
-        {mobileSearchOpen && (
-          <div className="md:hidden pb-3 animate-in fade-in slide-in-from-top-1 duration-200">
-            <HeaderSearchForm q={q} setQ={setQ} onSubmit={handleSearch} />
+        {searchOpen && (
+          <div ref={searchPanelRef} className="pb-3 pt-0 animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="max-w-xl mx-auto">
+              <HeaderSearchForm
+                q={q}
+                setQ={setQ}
+                onSubmit={handleSearch}
+                inputRef={searchInputRef}
+                onClose={closeSearch}
+              />
+            </div>
           </div>
         )}
       </div>
@@ -313,7 +367,7 @@ export function SiteFooter() {
           {[
             { icon: ShieldCheck, title: "Secure Payments", desc: "Razorpay encrypted checkout" },
             { icon: Truck, title: "Delivery", desc: `Estimated ${STORE.deliveryDays} pan-India` },
-            { icon: Cpu, title: "Listed Products", desc: "Details from supplier catalog" },
+            { icon: Cpu, title: "Listed Products", desc: "Curated catalog, verified listings" },
             { icon: Mail, title: "Support", desc: STORE.email },
           ].map((b) => (
             <div key={b.title} className="flex gap-3 items-start">

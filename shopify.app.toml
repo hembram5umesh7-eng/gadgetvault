@@ -1,0 +1,48 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "daf27f08c86d5f98454cb1988f0a3179"
+name = "GadgetVault"
+application_url = "https://gadgetvault.in/admin/shopify"
+embedded = false
+
+[access_scopes]
+scopes = "read_products,write_products,read_publications,write_publications,read_draft_orders,write_draft_orders,read_orders,write_orders"
+
+[auth]
+redirect_urls = [
+  "http://localhost:8080/api/shopify/auth/callback",
+  "https://gadgetvault.in/api/shopify/auth/callback",
+  "https://www.gadgetvault.in/api/shopify/auth/callback",
+  "https://gadgetvault-two.vercel.app/api/shopify/auth/callback",
+]
+
+[customer_authentication]
+redirect_uris = [
+  "https://gadgetvault.in/account/authorize",
+  "https://gadgetvault-two.vercel.app/account/authorize",
+]
+javascript_origins = [
+  "https://gadgetvault.in",
+  "https://gadgetvault-two.vercel.app",
+]
+logout_urls = [
+  "https://gadgetvault.in/account/logout",
+  "https://gadgetvault-two.vercel.app/account/logout",
+]
+
+[webhooks]
+api_version = "2024-10"
+
+  [[webhooks.subscriptions]]
+  topics = ["orders/cancelled"]
+  uri = "https://gadgetvault.in/api/webhooks/shopify/orders"
+
+  [[webhooks.subscriptions]]
+  topics = ["orders/updated"]
+  uri = "https://gadgetvault.in/api/webhooks/shopify/orders"
+
+[pos]
+embedded = false
+
+[build]
+automatically_update_urls_on_dev = true

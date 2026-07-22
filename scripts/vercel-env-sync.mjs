@@ -5,20 +5,31 @@
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
-const VARS = [
+const REQUIRED_VARS = [
   "SUPABASE_URL",
   "SUPABASE_PUBLISHABLE_KEY",
   "SUPABASE_SERVICE_ROLE_KEY",
   "VITE_SUPABASE_URL",
   "VITE_SUPABASE_PUBLISHABLE_KEY",
   "VITE_SUPABASE_PROJECT_ID",
-  "CJ_API_KEY",
-  "CJ_REFRESH_TOKEN",
-  "CJ_USD_INR",
-  "CJ_MARKUP_PERCENT",
-  "CJ_PAY_TYPE",
-  "CJ_LOGISTIC_NAME",
+  "VITE_SHOPIFY_STORE_DOMAIN",
+  "VITE_SHOPIFY_STOREFRONT_TOKEN",
+  "VITE_APP_URL",
+  "VITE_APP_PUBLIC_URL",
+  "SHOPIFY_CLIENT_ID",
+  "SHOPIFY_CLIENT_SECRET",
+  "SHOPIFY_HEADLESS_PUBLICATION_ID",
+  "SHOPIFY_CUSTOMER_ACCOUNT_SHOP_ID",
+  "VITE_SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_ID",
+  "SHOPIFY_CUSTOMER_ACCOUNT_AUTHORIZE_URL",
+  "SHOPIFY_CUSTOMER_ACCOUNT_TOKEN_URL",
+  "SHOPIFY_CUSTOMER_ACCOUNT_LOGOUT_URL",
 ];
+
+/** Set after Razorpay approval — skipped when empty in .env */
+const OPTIONAL_VARS = ["RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "RAZORPAY_WEBHOOK_SECRET"];
+
+const VARS = [...REQUIRED_VARS, ...OPTIONAL_VARS];
 
 const map = {};
 for (const line of readFileSync(".env", "utf8").split(/\r?\n/)) {
@@ -31,6 +42,10 @@ for (const line of readFileSync(".env", "utf8").split(/\r?\n/)) {
 for (const name of VARS) {
   const val = map[name];
   if (!val) {
+    if (OPTIONAL_VARS.includes(name)) {
+      console.log(`Skip optional ${name} (not in .env yet)`);
+      continue;
+    }
     console.error(`Missing ${name} in .env`);
     process.exitCode = 1;
     continue;

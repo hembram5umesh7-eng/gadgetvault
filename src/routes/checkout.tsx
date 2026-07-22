@@ -16,9 +16,18 @@ import { CartLineItem } from "@/components/cart-line-item";
 import { z } from "zod";
 import { useAuthedServerFn } from "@/lib/use-authed-server-fn";
 import { validateCoupon } from "@/lib/coupon.functions";
+import { validateReferralCode, getPendingReferralDiscount, completeReferralOnOrder } from "@/lib/referral.functions";
 import { createRazorpayOrder, verifyRazorpayPayment } from "@/lib/razorpay.functions";
-import { triggerCJFulfillment } from "@/lib/cj-dropshipping.functions";
+import { getCheckoutPaymentStatus } from "@/lib/payment-setup.functions";
+import { createShopifyStoreOrder, finalizeShopifyStoreOrder } from "@/lib/shopify-order.functions";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
+import {
+  friendlyShopperError,
+  ORDER_CONFIRMED_MESSAGE,
+  PAYMENT_CANCELLED_MESSAGE,
+  PAYMENT_SUCCESS_MESSAGE,
+} from "@/lib/customer-messages";
 
 import { Card, ShieldTick, Truck, Wallet2 } from "iconsax-react";
 
@@ -64,11 +73,20 @@ function Checkout() {
   const [profilePhone, setProfilePhone] = useState("");
   const createRzpOrder = useAuthedServerFn(createRazorpayOrder);
   const verifyRzpPayment = useAuthedServerFn(verifyRazorpayPayment);
-  const triggerCJ = useAuthedServerFn(triggerCJFulfillment);
+  const createShopifyOrder = useAuthedServerFn(createShopifyStoreOrder);
+  const finalizeShopifyOrder = useAuthedServerFn(finalizeShopifyStoreOrder);
   const validateCouponFn = useAuthedServerFn(validateCoupon);
+  const validateReferralFn = useAuthedServerFn(validateReferralCode);
+  const pendingReferralFn = useAuthedServerFn(getPendingReferralDiscount);
+  const completeReferralFn = useAuthedServerFn(completeReferralOnOrder);
   const [couponInput, setCouponInput] = useState("");
   const [couponCode, setCouponCode] = useState("");
+  const [referralInput, setReferralInput] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const [discount, setDiscount] = useState(0);
+  const [discountLabel, setDiscountLabel] = useState<"coupon" | "referral" | null>(null);
+  const [onlinePaymentsEnabled, setOnlinePaymentsEnabled] = useState(false);
+  const paymentStatusFn = useServerFn(getCheckoutPaymentStatus);
 
   useEffect(() => {
     if (!ready) return;
@@ -88,6 +106,27 @@ function Checkout() {
       });
   }, [user]);
 
+  useEffect(() => {
+    paymentStatusFn()
+      .then((s) => setOnlinePaymentsEnabled(s.onlinePaymentsEnabled))
+      .catch(() => setOnlinePaymentsEnabled(false));
+  }, [paymentStatusFn]);
+
+  useEffect(() => {
+    if (!onlinePaymentsEnabled && paymentMethod === "online") setPaymentMethod("cod");
+  }, [onlinePaymentsEnabled, paymentMethod]);
+
+  useEffect(() => {
+    if (!user) return;
+    pendingReferralFn()
+      .then((res) => {
+        if (res.eligible && res.code) {
+          setReferralInput(res.code);
+        }
+      })
+      .catch(() => {});
+  }, [user, pendingReferralFn]);
+
   const shipping = subtotal > STORE.freeShippingMin || subtotal === 0 ? 0 : STORE.standardShippingFee;
   const total = Math.max(0, subtotal + shipping - discount);
 
@@ -102,12 +141,38 @@ function Checkout() {
         },
       });
       setCouponCode(res.code);
+      setReferralCode("");
       setDiscount(res.discount);
+      setDiscountLabel("coupon");
       toast.success(`Coupon applied — ${formatINR(res.discount)} off`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Invalid coupon");
+      toast.error(friendlyShopperError(err, "Invalid or expired coupon."));
       setCouponCode("");
-      setDiscount(0);
+      if (discountLabel === "coupon") {
+        setDiscount(0);
+        setDiscountLabel(null);
+      }
+    }
+  };
+
+  const applyReferral = async () => {
+    if (!referralInput.trim()) return;
+    try {
+      const res = await validateReferralFn({
+        data: { code: referralInput.trim(), subtotal },
+      });
+      setReferralCode(res.code);
+      setCouponCode("");
+      setDiscount(res.discount);
+      setDiscountLabel("referral");
+      toast.success(`Referral applied — ${formatINR(res.discount)} off`);
+    } catch (err) {
+      toast.error(friendlyShopperError(err, "Invalid referral code."));
+      setReferralCode("");
+      if (discountLabel === "referral") {
+        setDiscount(0);
+        setDiscountLabel(null);
+      }
     }
   };
 
@@ -133,6 +198,13 @@ function Checkout() {
     if (!addrParse.success) { toast.error(addrParse.error.issues[0].message); return; }
     const a = addrParse.data;
 
+    const missingVariant = items.find((it) => !it.variantId);
+    if (missingVariant) {
+      setSubmitting(false);
+      toast.error("Please re-add items to cart — variant info missing");
+      return;
+    }
+
     setSubmitting(true);
     const { data: order, error: orderErr } = await supabase
       .from("orders")
@@ -144,7 +216,7 @@ function Checkout() {
         subtotal: subtotal,
         shipping_fee: shipping,
         total,
-        coupon_code: couponCode || null,
+        coupon_code: discountLabel === "coupon" ? couponCode || null : discountLabel === "referral" ? referralCode || null : null,
         discount_amount: discount,
         ship_full_name: a.full_name,
         ship_phone: a.phone,
@@ -160,14 +232,17 @@ function Checkout() {
 
     if (orderErr || !order) {
       setSubmitting(false);
-      toast.error(orderErr?.message ?? "Order failed");
+      toast.error(friendlyShopperError(orderErr, "We couldn't place your order. Please try again."));
       return;
     }
 
     const itemRows = items.map((it) => ({
       order_id: order.id,
-      product_id: it.productId,
-      variant_id: it.variantId,
+      product_id: null,
+      variant_id: null,
+      shopify_product_id: it.productId,
+      shopify_variant_id: it.variantId,
+      product_slug: it.productSlug ?? null,
       product_name: it.productName,
       size: it.size,
       color: it.color,
@@ -178,27 +253,76 @@ function Checkout() {
     const { error: itemsErr } = await supabase.from("order_items").insert(itemRows);
     if (itemsErr) {
       setSubmitting(false);
-      toast.error(itemsErr.message);
+      toast.error(friendlyShopperError(itemsErr, "We couldn't save your order items. Please try again."));
       return;
     }
 
-    const sendToCJ = async () => {
+    if (discountLabel === "referral" && referralCode && discount > 0) {
       try {
-        const cj = await triggerCJ({ data: { orderId: order.id } });
-        if (cj.ok && !cj.skipped) toast.success("Order sent to CJ for fulfillment");
-        else if (!cj.ok) toast.warning(`Order placed — CJ: ${cj.message}`);
-      } catch (err) {
-        toast.warning(
-          err instanceof Error ? err.message : "Order placed — CJ sync failed. Admin can retry from Orders.",
-        );
+        const refRes = await completeReferralFn({
+          data: { orderId: order.id, referralCode, referredDiscount: discount },
+        });
+        if (refRes.rewardCouponCode) {
+          toast.success(`Referral complete! Your friend earned reward coupon ${refRes.rewardCouponCode}`);
+        }
+      } catch {
+        /* Referral reward runs in background — don't worry the customer. */
       }
+    }
+
+    const syncToShopify = (paymentPending: boolean) => {
+      void (async () => {
+        try {
+          const shopifyRes = await createShopifyOrder({
+            data: {
+              email: user.email ?? `${user.id}@gadgetvault.in`,
+              phone: a.phone,
+              lineItems: items.map((it) => ({
+                variantId: it.variantId!,
+                quantity: it.quantity,
+                productName: it.productName,
+                size: it.size,
+                color: it.color,
+              })),
+              shipping: {
+                full_name: a.full_name,
+                line1: a.line1,
+                line2: a.line2,
+                city: a.city,
+                state: a.state,
+                pincode: a.pincode,
+              },
+              discountAmount: discount,
+              discountLabel: discountLabel === "referral" ? `Referral ${referralCode}` : couponCode || undefined,
+              paymentMethod: paymentMethod === "cod" ? "cod" : "online",
+              note: `GadgetVault order ${order.order_number}`,
+            },
+          });
+
+          let shopifyOrderId = shopifyRes.shopifyOrderId;
+          if (!shopifyOrderId && !paymentPending) {
+            const fin = await finalizeShopifyOrder({ data: { draftOrderId: shopifyRes.draftOrderId } });
+            shopifyOrderId = fin.shopifyOrderId;
+          }
+
+          await supabase
+            .from("orders")
+            .update({
+              shopify_order_id: shopifyOrderId,
+              shopify_draft_order_id: shopifyRes.draftOrderId,
+            })
+            .eq("id", order.id);
+        } catch {
+          /* Fulfillment sync is handled server-side; never surface to shoppers. */
+        }
+      })();
     };
 
     if (paymentMethod === "online") {
       const ok = await loadRazorpayScript();
       if (!ok) {
         setSubmitting(false);
-        toast.error("Failed to load payment gateway");
+        toast.error("Payment gateway is temporarily unavailable. Try again or choose Cash on Delivery.");
         return;
       }
       try {
@@ -222,19 +346,19 @@ function Checkout() {
                   razorpay_signature: resp.razorpay_signature,
                 },
               });
-              await sendToCJ();
+              syncToShopify(false);
               cart.clear();
-              toast.success(`Payment successful · Order ${order.order_number}`);
+              toast.success(PAYMENT_SUCCESS_MESSAGE(order.order_number));
               navigate({ to: "/orders/$orderId", params: { orderId: order.id } });
             } catch (err) {
-              toast.error(err instanceof Error ? err.message : "Payment verification failed");
+              toast.error(friendlyShopperError(err, "Payment could not be verified. Check My Orders or contact support."));
               setSubmitting(false);
             }
           },
           modal: {
             ondismiss: () => {
               setSubmitting(false);
-              toast.message("Payment cancelled. Your order is saved as unpaid.");
+              toast.message(PAYMENT_CANCELLED_MESSAGE);
               navigate({ to: "/orders/$orderId", params: { orderId: order.id } });
             },
           },
@@ -243,14 +367,14 @@ function Checkout() {
         new window.Razorpay(options).open();
       } catch (err) {
         setSubmitting(false);
-        toast.error(err instanceof Error ? err.message : "Could not start payment");
+        toast.error(friendlyShopperError(err, "Could not start payment. Please try again."));
       }
       return;
     }
 
-    await sendToCJ();
+    syncToShopify(paymentMethod === "cod");
     cart.clear();
-    toast.success(`Order ${order.order_number} placed!`);
+    toast.success(ORDER_CONFIRMED_MESSAGE);
     navigate({ to: "/orders/$orderId", params: { orderId: order.id } });
   };
 
@@ -297,8 +421,8 @@ function Checkout() {
                   <Input name="full_name" required defaultValue={profileName} key={`name-${profileName}`} className="rounded-xl mt-1.5" />
                 </div>
                 <div>
-                  <Label>Phone</Label>
-                  <Input name="phone" required pattern="[0-9+]+" defaultValue={profilePhone} key={`phone-${profilePhone}`} className="rounded-xl mt-1.5" />
+                  <Label>Phone (10 digit, 0 mat lagao)</Label>
+                  <Input name="phone" required pattern="[6-9][0-9]{9}" title="10 digit mobile — 6200104450 (leading 0 nahi)" defaultValue={profilePhone?.replace(/^0/, "")} key={`phone-${profilePhone}`} className="rounded-xl mt-1.5" placeholder="6200104450" />
                 </div>
                 <div>
                   <Label>Pincode</Label>
@@ -337,11 +461,13 @@ function Checkout() {
                   </div>
                   <Truck size={22} className="text-muted-foreground shrink-0" />
                 </label>
-                <label className={`flex gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === "online" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/30"}`}>
-                  <input type="radio" name="pay" value="online" checked={paymentMethod === "online"} onChange={() => setPaymentMethod("online")} className="mt-1" />
+                <label className={`flex gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === "online" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/30"} ${!onlinePaymentsEnabled ? "opacity-50 cursor-not-allowed" : ""}`}>
+                  <input type="radio" name="pay" value="online" checked={paymentMethod === "online"} onChange={() => setPaymentMethod("online")} className="mt-1" disabled={!onlinePaymentsEnabled} />
                   <div className="flex-1">
                     <p className="font-bold text-sm">Pay Online via Razorpay</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">UPI · Cards · Netbanking · Wallets</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {onlinePaymentsEnabled ? "UPI · Cards · Netbanking · Wallets" : "Admin → Payments mein Razorpay keys save karo"}
+                    </p>
                   </div>
                   <Card size={22} className="text-muted-foreground shrink-0" variant="Bold" />
                 </label>
@@ -378,8 +504,15 @@ function Checkout() {
                 <Input value={couponInput} onChange={(e) => setCouponInput(e.target.value.toUpperCase())} placeholder="Coupon code" className="h-9" />
                 <Button type="button" variant="outline" onClick={applyCoupon} className="shrink-0 font-semibold">Apply</Button>
               </div>
-              {discount > 0 && (
+              <div className="flex gap-2 mb-2">
+                <Input value={referralInput} onChange={(e) => setReferralInput(e.target.value.toUpperCase())} placeholder="Referral code" className="h-9" />
+                <Button type="button" variant="outline" onClick={applyReferral} className="shrink-0 font-semibold">Apply</Button>
+              </div>
+              {discount > 0 && discountLabel === "coupon" && (
                 <div className="flex justify-between text-success"><span>Coupon ({couponCode})</span><span>-{formatINR(discount)}</span></div>
+              )}
+              {discount > 0 && discountLabel === "referral" && (
+                <div className="flex justify-between text-success"><span>Referral ({referralCode})</span><span>-{formatINR(discount)}</span></div>
               )}
               <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatINR(subtotal)}</span></div>
               <div className="flex justify-between">

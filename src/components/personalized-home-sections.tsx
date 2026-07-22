@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Clock, SearchNormal1, MagicStar } from "iconsax-react";
+import { Clock, SearchNormal1, MagicStar, Eye } from "iconsax-react";
 import { PremiumProductSection } from "@/components/premium-product-section";
 import { usePersonalizedHome } from "@/lib/use-personalized-home";
 import { clearRecentSearches } from "@/lib/user-personalization";
@@ -19,16 +19,13 @@ function formatRelativeTime(ts: number): string {
 
 export function PersonalizedHomeSections() {
   const { user } = useAuth();
-  const { recentlyViewed, recommended, recentSearches, loading, hasPersonalization } =
+  const { recentlyViewed, recommended, recentSearches, viewMeta, loading, hasPersonalization } =
     usePersonalizedHome();
 
   if (loading) return null;
-  if (!recentSearches.length && !recentlyViewed.length && !(recommended.length && hasPersonalization)) {
-    return null;
-  }
 
   return (
-    <div className="space-y-8 md:space-y-10">
+    <div className="space-y-8 md:space-y-10 py-2 md:py-4">
       {recentSearches.length > 0 && (
         <section className="container mx-auto px-4">
           <div className="rounded-2xl border border-primary/10 bg-muted/30 p-4 md:p-5">
@@ -64,18 +61,33 @@ export function PersonalizedHomeSections() {
         </section>
       )}
 
-      {recentlyViewed.length > 0 && (
-        <div className="container mx-auto px-4">
+      <section className="container mx-auto px-4">
+        {recentlyViewed.length > 0 ? (
           <PremiumProductSection
             eyebrow="For you"
             title="Recently Viewed"
-            subtitle="Pick up where you left off — your browsing history, unique to you."
+            subtitle="Pick up where you left off — products you browsed on this device."
             products={recentlyViewed}
             layout="rail"
             icon={<Clock size={22} variant="Bold" color="var(--primary)" />}
           />
-        </div>
-      )}
+        ) : (
+          <div className="rounded-2xl border border-dashed border-primary/25 bg-muted/20 p-6 md:p-8 text-center">
+            <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 mb-3">
+              <Eye size={24} variant="Bold" color="var(--primary)" />
+            </div>
+            <h3 className="font-extrabold text-lg">Recently Viewed</h3>
+            <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
+              {viewMeta.length > 0
+                ? "Some viewed products are no longer available — browse our catalog to discover more."
+                : "Products you open will appear here so you can continue shopping quickly."}
+            </p>
+            <Button asChild className="mt-4 rounded-xl font-bold" size="sm">
+              <Link to="/search" search={{ q: "" }}>Browse products</Link>
+            </Button>
+          </div>
+        )}
+      </section>
 
       {recommended.length > 0 && hasPersonalization && (
         <div className="container mx-auto px-4">

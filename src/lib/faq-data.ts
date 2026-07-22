@@ -4,11 +4,11 @@ import { DELIVERY_ESTIMATES } from "@/lib/legal-copy";
 export const STORE_FAQ = [
   {
     q: "Where do products come from?",
-    a: "Many products are fulfilled via dropshipping partners (including CJ Dropshipping). We transmit your order to the supplier who ships to your address in India. See our Fulfillment Policy for details.",
+    a: "Products are sourced and fulfilled through trusted Indian fulfilment partners. We coordinate dispatch to your address — partner names are not shown publicly. See our Fulfillment Policy for details.",
   },
   {
     q: "How long does delivery really take?",
-    a: `Estimated ${DELIVERY_ESTIMATES.totalTypical} — not a guaranteed date. Processing (${DELIVERY_ESTIMATES.processingDays}), supplier fulfilment (${DELIVERY_ESTIMATES.fulfillmentDays}), then courier (${DELIVERY_ESTIMATES.courierDays}). Delays can happen during festivals or stock issues.`,
+    a: `Estimated ${DELIVERY_ESTIMATES.totalTypical} — not a guaranteed date. Processing (${DELIVERY_ESTIMATES.processingDays}), partner dispatch (${DELIVERY_ESTIMATES.fulfillmentDays}), then courier (${DELIVERY_ESTIMATES.courierDays}). Remote areas: ${DELIVERY_ESTIMATES.remoteTypical}.`,
   },
   {
     q: "Can I complain if delivery is late?",

@@ -41,8 +41,8 @@ function PrivacyPage() {
         <p>We share data only with processors required to operate:</p>
         <ul className="list-disc pl-5 space-y-1 mt-2">
           <li><strong>Razorpay</strong> — payments</li>
-          <li><strong>Courier / Shiprocket</strong> — delivery</li>
-          <li><strong>CJ Dropshipping & suppliers</strong> — order fulfilment (name, address, phone, product SKU)</li>
+          <li><strong>Fulfilment partners</strong> — order processing & dispatch (name, address, phone, product details)</li>
+          <li><strong>Courier partners</strong> — last-mile delivery & tracking</li>
           <li><strong>Supabase / cloud hosting</strong> — secure storage</li>
         </ul>
         <p className="mt-2">We do not sell your personal data.</p>

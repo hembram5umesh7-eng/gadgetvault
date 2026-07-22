@@ -7,6 +7,7 @@ import {
   rolesFromUser,
   syncSupabaseSession,
   canAccessAdminPanel,
+  canAccessSubAdminPanel,
   isSuperAdmin,
   authStorageKey,
 } from "@/lib/auth-session";
@@ -23,6 +24,8 @@ interface AuthContextValue {
   isAdmin: boolean;
   /** Store worker — admin panel access on behalf of admin */
   isStaff: boolean;
+  /** Product pusher — Dropship India only */
+  isSubAdmin: boolean;
   /** Admin or staff — can open admin panel */
   canAccessAdmin: boolean;
   isManufacturer: boolean;
@@ -95,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ready,
       isAdmin: isSuperAdmin(effectiveRoles),
       isStaff: effectiveRoles.includes("staff"),
+      isSubAdmin: effectiveRoles.includes("sub_admin"),
       canAccessAdmin: canAccessAdminPanel(effectiveRoles),
       isManufacturer: effectiveRoles.includes("manufacturer"),
       signOut,

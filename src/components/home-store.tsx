@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchProductCards, fetchActiveProductCount } from "@/lib/products";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { ProductCard, type ProductCardData } from "@/components/product-card";
 import { CategoryTile } from "@/components/category-tile";
@@ -67,21 +67,19 @@ export function HomeStore() {
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(FALLBACK_HERO_SLIDES);
   const [productCount, setProductCount] = useState(0);
   const { categories } = useCategories();
-  const select = "id,name,slug,base_price,marketing_price,images,category,brand,is_bestseller,is_deal";
-
   useEffect(() => {
     Promise.all([
-      supabase.from("products").select(select).eq("active", true).order("created_at", { ascending: false }).limit(8),
-      supabase.from("products").select(select).eq("active", true).eq("is_bestseller", true).limit(4),
+      fetchProductCards({ limit: 8 }),
+      fetchProductCards({ limit: 4, bestseller: true }),
       fetchFlashSaleCatalog(),
-      supabase.from("products").select("id", { count: "exact", head: true }).eq("active", true),
-    ]).then(([all, best, flash, countRes]) => {
-      setProducts((all.data as ProductCardData[]) ?? []);
-      setBestsellers((best.data as ProductCardData[]) ?? []);
-      setHeroSlides(buildHeroSlides((all.data as ProductCardData[]) ?? []));
+      fetchActiveProductCount(),
+    ]).then(([all, best, flash, count]) => {
+      setProducts(all);
+      setBestsellers(best);
+      setHeroSlides(buildHeroSlides(all));
       setFlashSale(flash.settings);
       setDeals(flash.products.slice(0, 4));
-      setProductCount(countRes.count ?? 0);
+      setProductCount(count);
     });
   }, []);
 

@@ -19,7 +19,15 @@
     "variants:backfill": "node --env-file=.env scripts/backfill-variant-colors.mjs",
     "seed:users": "node --env-file=.env scripts/seed-test-users.mjs",
     "cj:setup": "node --env-file=.env scripts/cj-setup.mjs",
-    "shiprocket:sync-pickups": "node --env-file=.env scripts/sync-shiprocket-pickups.mjs"
+    "shiprocket:sync-pickups": "node --env-file=.env scripts/sync-shiprocket-pickups.mjs",
+    "shopify:publish": "node --env-file=.env scripts/publish-products-headless.mjs",
+    "shopify:publish-one": "node --env-file=.env scripts/publish-one-product.mjs",
+    "shopify:health": "node --env-file=.env scripts/check-storefront-health.mjs",
+    "shopify:fix-credentials": "node --env-file=.env scripts/fix-shopify-credentials.mjs",
+    "shopify:sync": "node --env-file=.env scripts/shopify-full-sync.mjs",
+    "shopify:customer-setup": "node scripts/print-shopify-customer-setup.mjs",
+    "shopify:push-customer-urls": "node scripts/push-customer-api-urls.mjs",
+    "shopify:sync-orders": "node --env-file=.env scripts/sync-pending-orders.mjs"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",

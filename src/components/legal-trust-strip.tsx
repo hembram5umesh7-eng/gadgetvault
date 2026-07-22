@@ -29,7 +29,7 @@ export function LegalTrustStrip({ className = "" }: { className?: string }) {
           to="/fulfillment"
           className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 text-xs font-semibold text-primary hover:bg-primary/15 transition-colors"
         >
-          CJ Fulfillment Policy →
+          Fulfillment Policy →
         </Link>
       </div>
     </section>

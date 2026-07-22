@@ -28,7 +28,7 @@ export function NewArrivalsCarousel({ products, defaultCategory }: NewArrivalsCa
   if (images.length === 0) return null;
 
   return (
-    <section className="container mx-auto px-3 sm:px-4 py-10 md:py-14">
+    <section className="container mx-auto px-3 sm:px-4 py-10 md:py-14 overflow-hidden">
       <FeatureCarousel
         title={
           <>

@@ -6,7 +6,10 @@ import {
   FLASH_SALE_KEY,
   parseFlashSaleSettings,
   type FlashSaleSettings,
-} from "@/lib/flash-sale-settings";
+} from "@flash-sale-template";
+import type { FlashSaleAdminProduct } from "@flash-sale-template";
+import { fetchShopifyProducts } from "@/integrations/shopify/storefront";
+import { mapProductCard } from "@/integrations/shopify/product-mapper";
 
 async function assertStaffOrAdmin(userId: string) {
   const { data } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", userId);
@@ -14,64 +17,45 @@ async function assertStaffOrAdmin(userId: string) {
   if (!roles.includes("admin") && !roles.includes("staff")) throw new Error("Forbidden");
 }
 
-export type FlashSaleAdminProduct = {
-  id: string;
-  name: string;
-  slug: string;
-  category: string;
-  base_price: number;
-  marketing_price: number | null;
-  cj_cost_usd: number | null;
-  cj_product_id: string | null;
-  fulfillment_source: string;
-  images: string[] | null;
-  inFlashSale: boolean;
-  salePrice: number;
-  displayMrp: number | null;
-};
-
 export const getFlashSaleAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertStaffOrAdmin(context.userId);
 
-    const [{ data: settingsRow }, { data: items }, { data: products }] = await Promise.all([
+    const [{ data: settingsRow }, { data: items }, shopifyNodes] = await Promise.all([
       supabaseAdmin.from("app_settings").select("value").eq("key", FLASH_SALE_KEY).maybeSingle(),
-      supabaseAdmin.from("flash_sale_items").select("product_id, sale_price, display_mrp"),
-      supabaseAdmin
-        .from("products")
-        .select("id, name, slug, category, base_price, marketing_price, cj_cost_usd, cj_product_id, fulfillment_source, images, active")
-        .eq("active", true)
-        .order("name"),
+      supabaseAdmin.from("flash_sale_items").select("product_id, product_handle, sale_price, display_mrp"),
+      fetchShopifyProducts({ first: 100, query: "available_for_sale:true" }),
     ]);
 
     const settings = parseFlashSaleSettings(settingsRow?.value);
     const itemMap = new Map(
       (items ?? []).map((i) => [
-        i.product_id,
+        (i.product_handle as string) || String(i.product_id),
         { salePrice: i.sale_price, displayMrp: i.display_mrp as number | null },
       ]),
     );
 
     const inCategory = (category: string) => settings.categorySlugs.includes(category);
 
-    const catalog: FlashSaleAdminProduct[] = (products ?? []).map((p) => {
-      const row = itemMap.get(p.id);
-      const included = Boolean(row) || inCategory(p.category);
+    const catalog: FlashSaleAdminProduct[] = shopifyNodes.map((node) => {
+      const card = mapProductCard(node);
+      const row = itemMap.get(card.slug);
+      const included = Boolean(row) || inCategory(card.category);
       return {
-        id: p.id,
-        name: p.name,
-        slug: p.slug,
-        category: p.category,
-        base_price: p.base_price,
-        marketing_price: p.marketing_price,
-        cj_cost_usd: p.cj_cost_usd,
-        cj_product_id: p.cj_product_id,
-        fulfillment_source: p.fulfillment_source ?? "local",
-        images: p.images,
+        id: card.id,
+        name: card.name,
+        slug: card.slug,
+        category: card.category,
+        base_price: card.base_price,
+        marketing_price: card.marketing_price,
+        cj_cost_usd: null,
+        cj_product_id: null,
+        fulfillment_source: "shopify",
+        images: card.images,
         inFlashSale: included,
-        salePrice: row?.salePrice ?? p.base_price,
-        displayMrp: row?.displayMrp ?? p.marketing_price,
+        salePrice: row?.salePrice ?? card.base_price,
+        displayMrp: row?.displayMrp ?? card.marketing_price,
       };
     });
 
@@ -79,7 +63,7 @@ export const getFlashSaleAdmin = createServerFn({ method: "GET" })
   });
 
 const saveItemSchema = z.object({
-  productId: z.string().uuid(),
+  productId: z.string().min(1),
   salePrice: z.number().int().positive(),
   displayMrp: z.number().int().positive().nullable().optional(),
 });
@@ -112,46 +96,23 @@ export const saveFlashSaleAdmin = createServerFn({ method: "POST" })
     });
     if (settingsErr) throw new Error(settingsErr.message);
 
-    const itemMap = new Map(data.items.map((i) => [i.productId, i]));
-
-    const flashProductIds = new Set<string>();
-    if (settings.enabled) {
-      for (const [pid] of itemMap) flashProductIds.add(pid);
-    }
+    const shopifyNodes = await fetchShopifyProducts({ first: 100, query: "available_for_sale:true" });
+    const slugById = new Map(shopifyNodes.map((n) => [n.id, n.handle]));
 
     await supabaseAdmin.from("flash_sale_items").delete().neq("product_id", "00000000-0000-0000-0000-000000000000");
 
-    if (flashProductIds.size > 0) {
-      const rows = [...itemMap.entries()]
-        .filter(([pid]) => flashProductIds.has(pid))
-        .map(([productId, item]) => ({
-          product_id: productId,
-          sale_price: item.salePrice,
-          display_mrp: item.displayMrp ?? null,
-          updated_at: new Date().toISOString(),
-        }));
+    if (settings.enabled && data.items.length > 0) {
+      const rows = data.items.map((item) => ({
+        product_id: item.productId,
+        product_handle: slugById.get(item.productId) ?? item.productId,
+        sale_price: item.salePrice,
+        display_mrp: item.displayMrp ?? null,
+        updated_at: new Date().toISOString(),
+      }));
 
       const { error: itemsErr } = await supabaseAdmin.from("flash_sale_items").upsert(rows);
       if (itemsErr) throw new Error(itemsErr.message);
     }
 
-    const { data: allProducts } = await supabaseAdmin.from("products").select("id");
-    const updates = (allProducts ?? []).map((p) => ({
-      id: p.id,
-      is_deal: settings.enabled && flashProductIds.has(p.id),
-    }));
-
-    for (const batch of chunk(updates, 50)) {
-      await Promise.all(
-        batch.map((u) => supabaseAdmin.from("products").update({ is_deal: u.is_deal }).eq("id", u.id)),
-      );
-    }
-
-    return { ok: true as const, productCount: flashProductIds.size };
+    return { ok: true as const, productCount: data.items.length };
   });
-
-function chunk<T>(arr: T[], size: number): T[][] {
-  const out: T[][] = [];
-  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
-  return out;
-}

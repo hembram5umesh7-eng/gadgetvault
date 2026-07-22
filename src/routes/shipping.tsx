@@ -36,6 +36,7 @@ function ShippingPage() {
           <li><strong>Supplier fulfilment (dropship):</strong> {DELIVERY_ESTIMATES.fulfillmentDays}</li>
           <li><strong>Courier transit in India:</strong> {DELIVERY_ESTIMATES.courierDays} after dispatch</li>
           <li><strong>Typical total:</strong> {DELIVERY_ESTIMATES.totalTypical}</li>
+          <li><strong>Remote areas:</strong> {DELIVERY_ESTIMATES.remoteTypical}</li>
         </ul>
         <p className="mt-2">{DELIVERY_ESTIMATES.extendedNote}</p>
         <p className="mt-2">{NO_FRAUD_CLAUSE}</p>

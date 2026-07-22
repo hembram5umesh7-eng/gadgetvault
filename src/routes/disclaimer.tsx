@@ -37,8 +37,8 @@ function DisclaimerPage() {
 
       <PolicySection title="4. Third-Party Services">
         <p>
-          Payments are processed by Razorpay. Shipping may involve third-party couriers and dropshipping partners (e.g. CJ Dropshipping).
-          {STORE.name} is not responsible for failures solely caused by third-party systems beyond our reasonable control, but we
+          Payments are processed by Razorpay. Shipping uses registered courier partners and fulfilment networks in India.
+          We do not publish third-party partner brand names on this website. {STORE.name} is not responsible for failures solely caused by third-party systems beyond our reasonable control, but we
           will assist you in resolving order issues.
         </p>
       </PolicySection>

@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth-context";
 import { loginWithPassword, resolvePostLoginRedirect, rolesFromUser } from "@/lib/auth-session";
 import { registerCustomer } from "@/lib/auth.functions";
+import { getReferralCodeFromStorage, saveReferralCodeToStorage } from "@/lib/referral-settings";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -21,6 +22,8 @@ export const Route = createFileRoute("/auth")({
         : "/",
     email: typeof s.email === "string" ? s.email : "",
     tab: s.tab === "signup" ? ("signup" as const) : ("login" as const),
+    ref: typeof s.ref === "string" ? s.ref.trim().toUpperCase() : "",
+    error: typeof s.error === "string" ? s.error : undefined,
   }),
   component: AuthPage,
 });
@@ -36,13 +39,27 @@ function redirectHint(path: string) {
 }
 
 function AuthPage() {
-  const { redirect, email: emailParam, tab: tabParam } = Route.useSearch();
+  const { redirect, email: emailParam, tab: tabParam, ref: refParam, error: errorParam } = Route.useSearch();
   const { user, ready, roles } = useAuth();
   const registerFn = useServerFn(registerCustomer);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [tab, setTab] = useState<"login" | "signup">(tabParam);
+  const [referralCode, setReferralCode] = useState(refParam || getReferralCodeFromStorage() || "");
+
+  useEffect(() => {
+    if (refParam) {
+      saveReferralCodeToStorage(refParam);
+      setReferralCode(refParam);
+      setTab("signup");
+    }
+  }, [refParam]);
+
+  useEffect(() => {
+    if (!errorParam) return;
+    toast.error(decodeURIComponent(errorParam.replace(/\+/g, " ")), { duration: 12000 });
+  }, [errorParam]);
 
   useEffect(() => {
     if (emailParam) setEmail(emailParam);
@@ -119,6 +136,7 @@ function AuthPage() {
           email: signupEmail.trim(),
           password: signupPassword,
           fullName: fullName.trim() || "Customer",
+          referralCode: referralCode.trim() || undefined,
         },
       });
       const loginData = await loginWithPassword(signupEmail.trim(), signupPassword);
@@ -141,6 +159,10 @@ function AuthPage() {
   }
 
   const checkoutFlow = redirect === "/checkout";
+  const adminFlow = redirect === "/admin" || redirect.startsWith("/admin/");
+  const staffFlow = redirect === "/staff" || redirect.startsWith("/staff/");
+  const subAdminFlow = redirect === "/subadmin" || redirect.startsWith("/subadmin/");
+  const panelLogin = adminFlow || staffFlow || subAdminFlow || redirect === "/partner";
 
   return (
     <div className="min-h-screen flex flex-col bg-muted/20">
@@ -183,6 +205,17 @@ function AuthPage() {
           </section>
 
           <div className="w-full bg-card border rounded-2xl p-6 sm:p-8 shadow-product">
+            {panelLogin && (
+              <div className="mb-5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-sm space-y-1">
+                <p className="font-semibold text-amber-900 dark:text-amber-200">
+                  {adminFlow ? "Admin panel login" : staffFlow ? "Staff panel login" : subAdminFlow ? "Sub-admin login" : "Partner login"}
+                </p>
+                <p className="text-muted-foreground text-xs leading-relaxed">
+                  Email + password se sign in karo.
+                  {subAdminFlow && " Sub-admin ko sirf Dropship India product push access milega."}
+                </p>
+              </div>
+            )}
             {checkoutFlow && (
               <div className="mb-5 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm">
                 <ShoppingBag className="h-4 w-4 text-primary shrink-0" />
@@ -230,12 +263,20 @@ function AuthPage() {
                     />
                   </div>
                   <Button type="submit" className="w-full font-bold" size="lg" disabled={loading}>
-                    {loading ? "Signing in…" : checkoutFlow ? "Sign in & continue checkout" : "Sign In"}
+                    {loading ? "Signing in…" : checkoutFlow ? "Sign in & continue checkout" : panelLogin ? "Sign in to panel" : "Sign In"}
                   </Button>
                 </form>
               </TabsContent>
 
               <TabsContent value="signup">
+                {referralCode && (
+                  <div className="mb-4 rounded-xl border border-primary/30 bg-primary/5 p-3 text-sm">
+                    <p className="font-semibold text-primary">Referral invite detected</p>
+                    <p className="text-muted-foreground mt-1">
+                      Code <span className="font-mono font-bold text-foreground">{referralCode}</span> — get a discount on your first order after signup!
+                    </p>
+                  </div>
+                )}
                 <form onSubmit={handleSignup} className="space-y-4">
                   <div>
                     <Label htmlFor="signup-name">Full Name</Label>

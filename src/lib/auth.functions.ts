@@ -3,11 +3,13 @@ import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { attachReferralOnSignup } from "@/lib/referral.functions";
 
 const registerInput = z.object({
   email: z.string().trim().email("Enter a valid email"),
   password: z.string().min(8, "Password must be at least 8 characters").max(72),
   fullName: z.string().trim().min(2, "Enter your full name").max(100),
+  referralCode: z.string().trim().max(20).optional(),
 });
 
 async function findUserByEmail(email: string) {
@@ -60,6 +62,7 @@ export const registerCustomer = createServerFn({ method: "POST" })
 
     if (!error && created.user) {
       await ensureShopperProfile(created.user.id, fullName);
+      await attachReferralOnSignup(created.user.id, data.referralCode);
       return { ok: true as const, message: "Account created successfully" };
     }
 
@@ -84,5 +87,6 @@ export const registerCustomer = createServerFn({ method: "POST" })
     if (updErr) throw new Error(updErr.message);
 
     await ensureShopperProfile(existing.id, fullName);
+    await attachReferralOnSignup(existing.id, data.referralCode);
     return { ok: true as const, message: "Account ready — you can sign in now", repaired: true };
   });

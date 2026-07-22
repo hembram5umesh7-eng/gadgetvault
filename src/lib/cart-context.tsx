@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 export interface CartItem {
   id: string;
   productId: string;
+  productSlug?: string;
   productName: string;
   productImage: string;
   size: string;
@@ -27,7 +28,7 @@ interface CartContextValue {
 }
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
-const STORAGE_KEY = "gv_cart_v2";
+const STORAGE_KEY = "gv_cart_v3";
 
 function lineKey(item: Pick<CartItem, "productId" | "variantId" | "size" | "color" | "priceSource">) {
   return `${item.productId}|${item.variantId ?? ""}|${item.size}|${item.color}|${item.priceSource ?? "regular"}`;

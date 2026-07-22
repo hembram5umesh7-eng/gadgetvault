@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PolicyLayout, PolicySection } from "@/components/policy-layout";
 import { STORE } from "@/lib/store-info";
-import { CJ_FULFILLMENT_SUMMARY, LEGAL_LAST_UPDATED, NO_FRAUD_CLAUSE, contactBlock } from "@/lib/legal-copy";
+import { SHOPIFY_FULFILLMENT_SUMMARY, LEGAL_LAST_UPDATED, NO_FRAUD_CLAUSE, contactBlock } from "@/lib/legal-copy";
 
 export const Route = createFileRoute("/terms")({ component: TermsPage });
 
@@ -37,7 +37,7 @@ function TermsPage() {
       </PolicySection>
 
       <PolicySection title="4. Dropshipping & Fulfilment">
-        <p>{CJ_FULFILLMENT_SUMMARY}</p>
+        <p>{SHOPIFY_FULFILLMENT_SUMMARY}</p>
       </PolicySection>
 
       <PolicySection title="5. Orders & Payment">

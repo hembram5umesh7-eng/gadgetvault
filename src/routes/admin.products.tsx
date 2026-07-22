@@ -226,14 +226,19 @@ function AdminProducts() {
     else refresh();
   };
 
+  const shopifyAdminUrl = `https://${import.meta.env.VITE_SHOPIFY_STORE_DOMAIN || "gharstoreessential.myshopify.com"}/admin`;
+
   return (
     <AdminShell
       title="Products"
-      subtitle="Category-wise list · CJ Import se products add karo ya manually ek-ek add karo"
+      subtitle="Products live in Shopify — import via Dropship India, manage in Shopify Admin"
       actions={
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" asChild className="font-bold">
-            <Link to="/admin/cj-sync">CJ Import</Link>
+            <a href={`${shopifyAdminUrl}/products`} target="_blank" rel="noreferrer">Shopify Products</a>
+          </Button>
+          <Button variant="outline" asChild className="font-bold">
+            <a href={`${shopifyAdminUrl}/apps`} target="_blank" rel="noreferrer">Dropship India</a>
           </Button>
           <Button onClick={startNew} className="font-bold">
             <Plus className="h-4 w-4" /> Add Product
@@ -297,11 +302,11 @@ function AdminProducts() {
           <Package className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
           <p className="font-bold text-lg">No products yet</p>
           <p className="text-sm text-muted-foreground mt-1 mb-4">
-            CJ Import se products add karo, ya manually ek product add karo.
+            Import products via Dropship India in Shopify Admin. Categories auto-map to navbar.
           </p>
           <div className="flex flex-wrap justify-center gap-2">
-            <Button asChild><Link to="/admin/cj-sync">CJ Import</Link></Button>
-            <Button variant="outline" onClick={startNew}><Plus className="h-4 w-4" /> Add Product</Button>
+            <Button asChild><a href={`${shopifyAdminUrl}/apps`} target="_blank" rel="noreferrer">Open Dropship India</a></Button>
+            <Button variant="outline" asChild><a href={`${shopifyAdminUrl}/products`} target="_blank" rel="noreferrer">Shopify Products</a></Button>
           </div>
         </div>
       ) : (
@@ -328,8 +333,8 @@ function AdminProducts() {
                       <div className="min-w-0 flex-1">
                         <p className="font-bold truncate">{p.name}</p>
                         <p className="text-xs text-muted-foreground">{p.brand || "No brand"}</p>
-                        {p.fulfillment_source === "cj" && (
-                          <span className="inline-block mt-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-violet-500/15 text-violet-700">CJ Dropship</span>
+                        {p.fulfillment_source === "shopify" && (
+                          <span className="inline-block mt-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700">Shopify / Dropship India</span>
                         )}
                         <p className="text-sm font-extrabold text-primary mt-1">{formatINR(Number(p.base_price))}</p>
                         {p.marketing_price && p.marketing_price > p.base_price && (

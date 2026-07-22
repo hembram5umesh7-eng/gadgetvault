@@ -6,6 +6,7 @@ import { WishlistProvider } from "@/lib/wishlist-context";
 import { CompareProvider } from "@/lib/compare-context";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteVisitTracker } from "@/components/site-visit-tracker";
+import { ReferralCapture } from "@/components/referral-capture";
 import { ThemeProvider, THEME_INIT_SCRIPT, useTheme } from "@/lib/theme-context";
 
 export const Route = createRootRoute({
@@ -20,6 +21,8 @@ export const Route = createRootRoute({
       { property: "og:type", content: "website" },
     ],
     links: [
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.svg" },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
@@ -59,6 +62,7 @@ function RootComponent() {
           <WishlistProvider>
             <CompareProvider>
               <Outlet />
+              <ReferralCapture />
               <SiteVisitTracker />
               <ThemedToaster />
             </CompareProvider>

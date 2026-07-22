@@ -21,14 +21,15 @@ export const Route = createFileRoute("/staff")({ component: StaffLayout });
 
 function StaffLayout() {
   const navigate = useNavigate();
-  const { user, isStaff, isAdmin, ready } = useAuth();
+  const { user, isStaff, isAdmin, isSubAdmin, ready } = useAuth();
 
   useEffect(() => {
     if (!ready) return;
     if (!user) navigate({ to: "/auth", search: { redirect: "/staff" } });
     else if (isAdmin) navigate({ to: "/admin" });
+    else if (isSubAdmin) navigate({ to: "/subadmin" });
     else if (!isStaff) navigate({ to: "/" });
-  }, [ready, user, isStaff, isAdmin, navigate]);
+  }, [ready, user, isStaff, isAdmin, isSubAdmin, navigate]);
 
   useEffect(() => {
     if (ready && user && isStaff) void syncSupabaseSession();

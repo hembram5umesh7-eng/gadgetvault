@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { fetchProductBySlug } from "@/lib/products";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,9 @@ import { productMrp } from "@/lib/product-pricing";
 import { useAuth } from "@/lib/auth-context";
 import { recordProductView } from "@/lib/user-personalization";
 import { fetchFlashSalePrice } from "@/lib/flash-sale-client";
+import { ProductReviews, type ProductReviewRow } from "@/components/product-reviews";
+import { ProductShareButton } from "@/components/product-share-button";
+import { StarRatingSummary } from "@/components/star-rating";
 import { ShoppingBag, Flash, ShieldTick, Truck, Heart, Element3 } from "iconsax-react";
 import { toast } from "sonner";
 
@@ -66,26 +70,100 @@ function ProductPage() {
     salePrice: null,
     displayMrp: null,
   });
+  const [reviews, setReviews] = useState<ProductReviewRow[]>([]);
+  const [reviewAvg, setReviewAvg] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
-      const { data: p } = await supabase.from("products").select("*").eq("slug", slug).maybeSingle();
-      if (p) {
-        setProduct(p as Product);
-        const [{ data: vs }, flash] = await Promise.all([
-          supabase.from("product_variants").select("*").eq("product_id", p.id),
-          fetchFlashSalePrice(p.id),
-        ]);
-        setFlashPrice(flash);
-        const loaded = (vs as Variant[]) ?? [];
-        setVariants(loaded);
-        if (loaded.length) {
-          setModel(loaded[0].size);
-          setColor(loaded[0].color);
+      setLoading(true);
+      setLoadError(false);
+      setProduct(null);
+      setVariants([]);
+      try {
+        const detail = await fetchProductBySlug(slug);
+        if (cancelled) return;
+        if (!detail) {
+          setLoadError(true);
+          return;
         }
+        setProduct(detail);
+        setVariants(detail.variants);
+        if (detail.variants.length) {
+          setModel(detail.variants[0].size);
+          setColor(detail.variants[0].color);
+        }
+        const flash = await fetchFlashSalePrice(detail.slug);
+        if (!cancelled) setFlashPrice(flash);
+
+        const { data: approved } = await supabase
+          .from("product_reviews")
+          .select("id, rating, title, body, created_at, user_id")
+          .eq("product_slug", slug)
+          .eq("approved", true);
+        if (cancelled) return;
+        const rows = approved ?? [];
+        if (rows.length) {
+          setReviewCount(rows.length);
+          setReviewAvg(rows.reduce((s, r) => s + r.rating, 0) / rows.length);
+        }
+      } catch {
+        if (!cancelled) setLoadError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, [slug]);
+
+  useEffect(() => {
+    if (!product) return;
+    (async () => {
+      const { data: approved } = await supabase
+        .from("product_reviews")
+        .select("id, rating, title, body, created_at, user_id")
+        .eq("product_slug", product.slug)
+        .eq("approved", true)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      let rows = approved ?? [];
+      if (user) {
+        const { data: mine } = await supabase
+          .from("product_reviews")
+          .select("id, rating, title, body, created_at, user_id")
+          .eq("product_slug", product.slug)
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (mine && !rows.some((r) => r.id === mine.id)) {
+          rows = [mine, ...rows];
+        }
+      }
+
+      const userIds = [...new Set(rows.map((r) => r.user_id))];
+      const { data: profiles } = userIds.length
+        ? await supabase.from("profiles").select("id, full_name").in("id", userIds)
+        : { data: [] };
+      const nameMap = new Map((profiles ?? []).map((pr) => [pr.id, pr.full_name]));
+
+      setReviews(
+        rows.map((r) => ({
+          id: r.id,
+          userId: r.user_id,
+          rating: r.rating,
+          title: r.title,
+          body: r.body,
+          created_at: r.created_at,
+          authorName: user?.id === r.user_id ? "You" : (nameMap.get(r.user_id) || "Customer"),
+        })),
+      );
+    })();
+  }, [product?.slug, user?.id]);
 
   useEffect(() => {
     if (!product) return;
@@ -142,9 +220,21 @@ function ProductPage() {
     setColor(forModel[0].color);
   }, [model, variants, color]);
 
-  if (!product) return (
+  if (loading) return (
     <div className="min-h-screen flex flex-col bg-muted/20">
       <SiteHeader /><div className="flex-1 container mx-auto px-4 py-12">Loading…</div><SiteFooter />
+    </div>
+  );
+
+  if (loadError || !product) return (
+    <div className="min-h-screen flex flex-col bg-muted/20">
+      <SiteHeader />
+      <div className="flex-1 container mx-auto px-4 py-12 text-center">
+        <h1 className="text-2xl font-bold">Product not found</h1>
+        <p className="text-muted-foreground mt-2">This item may have been removed or is temporarily unavailable.</p>
+        <Button asChild className="mt-6"><Link to="/">Back to Home</Link></Button>
+      </div>
+      <SiteFooter />
     </div>
   );
 
@@ -161,6 +251,7 @@ function ProductPage() {
     if (selectedVariant && selectedVariant.stock <= 0) { toast.error("Out of stock"); return; }
     cart.add({
       productId: product.id,
+      productSlug: product.slug,
       productName: product.name,
       productImage: selectedVariant?.variant_image || product.images?.[0] || "",
       size: model, color,
@@ -227,6 +318,11 @@ function ProductPage() {
             {product.brand && <p className="text-sm font-bold text-primary">{product.brand}</p>}
             <p className="text-xs uppercase tracking-[0.15em] text-muted-foreground font-semibold mt-1">{product.category.replace(/-/g, " ")}</p>
             <h1 className="text-2xl md:text-3xl font-extrabold mt-2 leading-tight">{product.name}</h1>
+            {reviewCount > 0 && (
+              <div className="mt-2">
+                <StarRatingSummary avg={reviewAvg} count={reviewCount} size="md" />
+              </div>
+            )}
 
             {product.warranty_months > 0 && (
               <p className="text-xs text-muted-foreground mt-3">
@@ -322,14 +418,19 @@ function ProductPage() {
               <Button size="lg" variant="secondary" className="flex-1 font-bold rounded-xl h-12" onClick={() => addToCart(true)}>Buy Now →</Button>
             </div>
 
-            <div className="flex gap-2 mt-3">
-              <Button variant="outline" size="sm" className="rounded-xl flex-1" onClick={toggleWishlist}>
+            <div className="flex gap-2 mt-3 flex-wrap">
+              <Button variant="outline" size="sm" className="rounded-xl flex-1 min-w-[120px]" onClick={toggleWishlist}>
                 <Heart size={16} className={`mr-1.5 ${wishlist.has(product.id) ? "fill-primary text-primary" : ""}`} variant={wishlist.has(product.id) ? "Bold" : "Linear"} />
                 Wishlist
               </Button>
-              <Button variant="outline" size="sm" className="rounded-xl flex-1" onClick={addCompare}>
+              <Button variant="outline" size="sm" className="rounded-xl flex-1 min-w-[120px]" onClick={addCompare}>
                 <Element3 size={16} className="mr-1.5" /> Compare
               </Button>
+              <ProductShareButton
+                productName={product.name}
+                productSlug={product.slug}
+                imageUrl={displayImages[0]}
+              />
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-3 text-xs">
@@ -372,12 +473,15 @@ function ProductPage() {
               )}
             </TabsContent>
             <TabsContent value="reviews" className="mt-6">
-              <div className="rounded-xl border border-dashed p-8 text-center">
-                <p className="font-semibold text-foreground">No customer reviews yet</p>
-                <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
-                  Reviews will appear here after verified purchases. We only show real feedback from customers who bought this product.
-                </p>
-              </div>
+              <ProductReviews
+                productId={product.id}
+                productSlug={product.slug}
+                productName={product.name}
+                userId={user?.id}
+                initialReviews={reviews}
+                initialAvg={reviewAvg}
+                initialCount={reviewCount}
+              />
             </TabsContent>
           </Tabs>
         </div>
