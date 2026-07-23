@@ -18,7 +18,7 @@ import { fetchFlashSaleCatalog } from "@/lib/flash-sale-client";
 import { DEFAULT_FLASH_SALE, type FlashSaleSettings } from "@/lib/flash-sale-settings";
 import { formatINR } from "@/lib/order-utils";
 import { STORE_FAQ } from "@/lib/faq-data";
-import { Flash, Cpu, FlashCircle, Category, ShieldTick, Truck } from "iconsax-react";
+import { Flash, ShieldTick, Truck } from "iconsax-react";
 
 const FALLBACK_HERO_SLIDES: HeroSlide[] = [
   { id: "1", title: "Kitchen Essentials", subtitle: "Smart organizers & tools", price: "From ₹299", image: "https://images.unsplash.com/photo-1556911223-bff03130eb78?w=800&q=80", category: "kitchen-accessories", accent: "" },
@@ -47,18 +47,6 @@ function buildHeroSlides(products: ProductCardData[]): HeroSlide[] {
   return slides;
 }
 
-const QUICK_CATS = [
-  { icon: Category, label: "Kitchen", slug: "kitchen-accessories" },
-  { icon: Cpu, label: "Gadgets", slug: "unique-gadgets" },
-  { icon: FlashCircle, label: "Essentials", slug: "necessities" },
-];
-
-const TRUST_STATS = [
-  { icon: ShieldTick, value: "Razorpay", label: "Secure payments" },
-  { icon: Truck, value: "Pan-India", label: "Delivery coverage" },
-  { icon: Flash, value: "3", label: "Curated categories" },
-];
-
 export function HomeStore() {
   const [products, setProducts] = useState<ProductCardData[]>([]);
   const [bestsellers, setBestsellers] = useState<ProductCardData[]>([]);
@@ -67,6 +55,7 @@ export function HomeStore() {
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(FALLBACK_HERO_SLIDES);
   const [productCount, setProductCount] = useState(0);
   const { categories } = useCategories();
+
   useEffect(() => {
     Promise.all([
       fetchProductCards({ limit: 8 }),
@@ -83,42 +72,49 @@ export function HomeStore() {
     });
   }, []);
 
-  const defaultCategory = categories[0]?.slug ?? "kitchen-accessories";
+  const trustStats = [
+    { icon: ShieldTick, value: "Razorpay", label: "Secure payments" },
+    { icon: Truck, value: "Pan-India", label: "Delivery coverage" },
+    { icon: Flash, value: String(categories.length || "—"), label: "Shop categories" },
+  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SiteHeader />
       <main className="flex-1">
-        {/* 1. Hero — value prop + primary CTA */}
-        <FuturisticHero slides={heroSlides} defaultCategory={defaultCategory} productCount={productCount} />
+        <FuturisticHero slides={heroSlides} productCount={productCount} categoryCount={categories.length} />
 
-        {/* 2. Quick category shortcuts — immediate navigation */}
-        <section className="container mx-auto px-4 -mt-8 relative z-20 mb-2">
-          <div className="premium-card p-3 md:p-4 grid grid-cols-3 gap-2 md:gap-3 shadow-elegant border-primary/10 max-w-lg md:max-w-xl mx-auto">
-            {QUICK_CATS.map((c) => (
-              <Link
-                key={c.slug}
-                to="/category/$category"
-                params={{ category: c.slug }}
-                className="group flex flex-col items-center gap-1.5 p-2 md:p-3 rounded-xl hover:bg-primary/5 transition-all text-center"
-              >
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 group-hover:scale-105 transition-transform">
-                  <c.icon size={24} color="var(--primary)" variant="Bold" />
-                </div>
-                <span className="text-[11px] md:text-xs font-bold text-foreground">{c.label}</span>
-              </Link>
-            ))}
-          </div>
-        </section>
+        {categories.length > 0 && (
+          <section className="container mx-auto px-4 -mt-8 relative z-20 mb-2">
+            <div className="premium-card p-3 md:p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-3 shadow-elegant border-primary/10">
+              {categories.slice(0, 6).map((c) => (
+                <Link
+                  key={c.slug}
+                  to="/category/$category"
+                  params={{ category: c.slug }}
+                  className="group flex flex-col items-center gap-1.5 p-2 md:p-3 rounded-xl hover:bg-primary/5 transition-all text-center"
+                >
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 group-hover:scale-105 transition-transform overflow-hidden">
+                    {c.image_url ? (
+                      <img src={c.image_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-xs font-bold text-primary">{c.name.slice(0, 2).toUpperCase()}</span>
+                    )}
+                  </div>
+                  <span className="text-[11px] md:text-xs font-bold text-foreground line-clamp-2">{c.name}</span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
-        {/* 3. Shop by category — browse paths early */}
         <section className="container mx-auto px-4 py-8 md:py-10">
           <div className="flex items-end justify-between mb-5">
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-primary mb-1">Browse</p>
               <h2 className="text-xl md:text-2xl font-extrabold">Shop by Category</h2>
             </div>
-            <Link to="/search" search={{ q: "" }} className="text-sm font-semibold text-primary hover:underline">
+            <Link to="/shop" className="text-sm font-semibold text-primary hover:underline">
               All Products →
             </Link>
           </div>
@@ -129,7 +125,6 @@ export function HomeStore() {
           </div>
         </section>
 
-        {/* 4. Bestsellers — social proof, fast purchase intent */}
         {bestsellers.length > 0 && (
           <section className="container mx-auto px-4 py-6 md:py-8">
             <div className="flex items-end justify-between mb-5">
@@ -149,7 +144,6 @@ export function HomeStore() {
           </section>
         )}
 
-        {/* 5. Deals — urgency / conversion */}
         {flashSale.enabled && (
         <section className="container mx-auto px-4 mb-6 md:mb-8">
           <div className="rounded-3xl bg-gradient-to-br from-primary/15 via-primary/5 to-accent/10 border border-primary/20 p-6 md:p-10 relative overflow-hidden">
@@ -177,16 +171,13 @@ export function HomeStore() {
         </section>
         )}
 
-        {/* 6. New arrivals — fresh inventory */}
-        <NewArrivalsCarousel products={products} defaultCategory={defaultCategory} />
+        <NewArrivalsCarousel products={products} />
 
-        {/* 7. Personalized — returning shoppers */}
         <PersonalizedHomeSections />
 
-        {/* 8. Trust signals — after products, before objections */}
         <section className="container mx-auto px-4 py-6 md:py-8 border-y border-border/40 bg-muted/20">
           <div className="grid grid-cols-3 gap-3 md:gap-4 mb-6 max-w-3xl mx-auto">
-            {TRUST_STATS.map((s) => (
+            {trustStats.map((s) => (
               <div key={s.label} className="glass-stat-card text-center p-4 md:p-5">
                 <div className="flex justify-center mb-2">
                   <s.icon size={22} color="var(--primary)" variant="Bold" />
@@ -201,13 +192,9 @@ export function HomeStore() {
           <TrustBar />
         </section>
 
-        {/* 9. Brand credibility */}
         <BrandStrip />
-
-        {/* 10. Delivery expectations — reduce purchase anxiety */}
         <DeliveryTimelineSection />
 
-        {/* 11. FAQ — objection handling */}
         <section className="container mx-auto px-4 py-8 md:py-10">
           <div className="premium-card p-6 md:p-10 border-primary/10">
             <h2 className="text-xl md:text-2xl font-extrabold mb-5 text-center">Got Questions?</h2>
@@ -230,7 +217,6 @@ export function HomeStore() {
           </div>
         </section>
 
-        {/* 12. Legal + payment trust — pre-footer */}
         <section className="container mx-auto px-4 pb-6 md:pb-8">
           <LegalTrustStrip />
         </section>

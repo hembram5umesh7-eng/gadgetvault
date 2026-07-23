@@ -5,7 +5,6 @@ import { formatINR } from "@/lib/order-utils";
 
 interface NewArrivalsCarouselProps {
   products: ProductCardData[];
-  defaultCategory: string;
 }
 
 function toCarouselItems(products: ProductCardData[]): FeatureCarouselImage[] {
@@ -23,7 +22,7 @@ function toCarouselItems(products: ProductCardData[]): FeatureCarouselImage[] {
     }));
 }
 
-export function NewArrivalsCarousel({ products, defaultCategory }: NewArrivalsCarouselProps) {
+export function NewArrivalsCarousel({ products }: NewArrivalsCarouselProps) {
   const images = toCarouselItems(products);
   if (images.length === 0) return null;
 
@@ -40,11 +39,7 @@ export function NewArrivalsCarousel({ products, defaultCategory }: NewArrivalsCa
         images={images}
         autoPlayMs={5000}
         viewAll={
-          <Link
-            to="/category/$category"
-            params={{ category: defaultCategory }}
-            className="inline-flex items-center gap-1.5 text-sm font-bold text-primary hover:underline"
-          >
+          <Link to="/shop" className="inline-flex items-center gap-1.5 text-sm font-bold text-primary hover:underline">
             View All →
           </Link>
         }

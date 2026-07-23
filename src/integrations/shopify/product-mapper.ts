@@ -1,5 +1,5 @@
 import type { ProductCardData } from "@/components/product-card";
-import { inferNavCategory } from "@/lib/category-map";
+import { resolveProductCategorySlug } from "@/lib/category-map";
 
 export type ShopifyProductNode = {
   id: string;
@@ -74,7 +74,7 @@ export function mapProductCard(node: ShopifyProductNode): ProductCardData {
   const marketing = compare > base ? compare : null;
   const collectionHandles = node.collections?.edges.map((e) => e.node.handle) ?? [];
   const collectionTitles = node.collections?.edges.map((e) => e.node.title) ?? [];
-  const category = inferNavCategory({
+  const category = resolveProductCategorySlug({
     title: node.title,
     tags: node.tags,
     productType: node.productType,

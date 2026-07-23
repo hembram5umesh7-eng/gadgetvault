@@ -6,11 +6,11 @@ import { Cpu, Flash, ShieldTick } from "iconsax-react";
 
 interface FuturisticHeroProps {
   slides: HeroSlide[];
-  defaultCategory: string;
   productCount?: number;
+  categoryCount?: number;
 }
 
-export function FuturisticHero({ slides, defaultCategory, productCount = 0 }: FuturisticHeroProps) {
+export function FuturisticHero({ slides, productCount = 0, categoryCount = 0 }: FuturisticHeroProps) {
   return (
     <section className="relative min-h-[88vh] flex items-center overflow-hidden bg-gradient-hero text-white">
       {/* Animated mesh background */}
@@ -61,16 +61,16 @@ export function FuturisticHero({ slides, defaultCategory, productCount = 0 }: Fu
 
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg" className="h-12 px-8 rounded-2xl font-bold bg-white text-primary hover:bg-white/95 shadow-lg shadow-black/20">
-                <Link to="/category/$category" params={{ category: defaultCategory }}>Explore Store →</Link>
+                <Link to="/shop">Explore Store →</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="h-12 px-8 rounded-2xl font-bold border-white/50 text-white bg-white/5 hover:bg-white/15 backdrop-blur-sm">
                 <Link to="/deals">View Deals</Link>
               </Button>
             </div>
 
-            {productCount > 0 && (
+                {productCount > 0 && (
               <p className="mt-6 text-sm text-white/60 font-medium">
-                {productCount}+ products live · 3 curated categories
+                {productCount}+ products live{categoryCount > 0 ? ` · ${categoryCount} categories` : ""}
               </p>
             )}
           </div>

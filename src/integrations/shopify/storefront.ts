@@ -15,7 +15,7 @@ const PRODUCT_CARD_FRAGMENT = `
   priceRange { minVariantPrice { amount currencyCode } }
   compareAtPriceRange { minVariantPrice { amount } }
   images(first: 8) { edges { node { url } } }
-  collections(first: 3) { edges { node { handle title } } }
+  collections(first: 10) { edges { node { handle title } } }
 `;
 
 const PRODUCT_DETAIL_FRAGMENT = `
@@ -35,6 +35,15 @@ const PRODUCT_DETAIL_FRAGMENT = `
     }
   }
 `;
+
+export type ShopifyCollectionNode = {
+  id: string;
+  handle: string;
+  title: string;
+  description?: string | null;
+  image?: { url: string } | null;
+  productCount: number;
+};
 
 async function storefrontQuery<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
   if (!shopifyConfigured()) {
@@ -121,4 +130,77 @@ export async function searchShopifyProducts(term: string, first = 48): Promise<S
 export async function countShopifyProducts(): Promise<number> {
   const list = await fetchShopifyProducts({ first: 250 });
   return list.length;
+}
+
+const COLLECTION_FRAGMENT = `
+  id
+  handle
+  title
+  description
+  image { url }
+`;
+
+export async function fetchShopifyCollections(opts?: { first?: number }): Promise<ShopifyCollectionNode[]> {
+  const data = await storefrontQuery<{
+    collections: {
+      edges: {
+        node: {
+          id: string;
+          handle: string;
+          title: string;
+          description?: string | null;
+          image?: { url: string } | null;
+          products: { edges: { node: { id: string } }[] };
+        };
+      }[];
+    };
+  }>(
+    `query Collections($first: Int!) {
+      collections(first: $first) {
+        edges {
+          node {
+            ${COLLECTION_FRAGMENT}
+            products(first: 1) { edges { node { id } } }
+          }
+        }
+      }
+    }`,
+    { first: opts?.first ?? 50 },
+  );
+
+  return data.collections.edges.map(({ node }) => ({
+    id: node.id,
+    handle: node.handle,
+    title: node.title,
+    description: node.description,
+    image: node.image,
+    productCount: node.products.edges.length,
+  }));
+}
+
+export async function fetchShopifyCollectionByHandle(handle: string): Promise<ShopifyCollectionNode | null> {
+  const data = await storefrontQuery<{
+    collection: {
+      id: string;
+      handle: string;
+      title: string;
+      description?: string | null;
+      image?: { url: string } | null;
+      products: { edges: { node: { id: string } }[] };
+    } | null;
+  }>(
+    `query Collection($handle: String!) {
+      collection(handle: $handle) {
+        ${COLLECTION_FRAGMENT}
+        products(first: 1) { edges { node { id } } }
+      }
+    }`,
+    { handle },
+  );
+
+  if (!data.collection) return null;
+  return {
+    ...data.collection,
+    productCount: data.collection.products.edges.length,
+  };
 }

@@ -93,7 +93,7 @@ export function SiteHeader() {
   const searchPanelRef = useRef<HTMLDivElement>(null);
 
   const navItems = categories.length
-    ? categories.filter((c) => c.slug).slice(0, 3).map((c) => ({ label: c.name, slug: c.slug }))
+    ? categories.filter((c) => c.slug).map((c) => ({ label: c.name, slug: c.slug }))
     : STORE_CATEGORIES;
 
   const handleSearch = (e: React.FormEvent) => {
@@ -163,7 +163,7 @@ export function SiteHeader() {
             </div>
           </Link>
 
-          <nav className="hidden xl:flex items-center gap-0.5 shrink-0">
+          <nav className="hidden xl:flex items-center gap-0.5 shrink min-w-0 max-w-[50%] overflow-x-auto scrollbar-none">
             {navItems.map((n) => (
               <Link
                 key={n.slug}
@@ -357,7 +357,7 @@ export function SiteHeader() {
 export function SiteFooter() {
   const { categories } = useCategories();
   const shopLinks = categories.length
-    ? categories.filter((c) => c.slug).slice(0, 3).map((c) => ({ label: c.name, slug: c.slug }))
+    ? categories.filter((c) => c.slug).map((c) => ({ label: c.name, slug: c.slug }))
     : STORE_CATEGORIES;
 
   return (

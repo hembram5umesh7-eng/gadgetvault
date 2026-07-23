@@ -56,10 +56,10 @@ function CategoryPage() {
           <div className="premium-card text-center py-16 px-6 text-muted-foreground space-y-3">
             <p className="text-base font-semibold text-foreground">No products in this category yet.</p>
             <p className="text-sm max-w-lg mx-auto">
-              Agar product Shopify Admin mein hai lekin yahan nahi dikh raha, to wo shayad sirf Online Store par publish hai — Headless (gadgetvault) channel par publish karna hoga.
+              Products in this collection appear automatically when assigned to this Shopify collection and published to Headless (gadgetvault).
             </p>
             <p className="text-xs">
-              Admin → Dashboard → <strong>Sync all to GadgetVault</strong> ya Shopify mein product → Publishing → Headless ✓
+              Shopify Admin → Product → Collections → assign collection → Publishing → Headless ✓
             </p>
           </div>
         ) : (

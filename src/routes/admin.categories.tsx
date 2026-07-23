@@ -75,7 +75,7 @@ function AdminCategories() {
   return (
     <AdminShell
       title="Categories"
-      subtitle="Manage shop categories shown on homepage and navigation."
+      subtitle="Nav categories auto-sync from Shopify Collections. Create collections in Shopify Admin — they appear on the site automatically. Use this page to adjust sort order, images, or hide a category."
       actions={
         <Button onClick={() => setEditing({ name: "", slug: "", description: "", image_url: "", sort_order: items.length + 1, active: true })}>
           <Plus className="h-4 w-4" /> Add Category

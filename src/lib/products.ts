@@ -36,17 +36,26 @@ export async function fetchProductBySlug(slug: string): Promise<MappedProduct | 
 }
 
 export async function fetchProductsByCategory(categorySlug: string): Promise<ProductCardData[]> {
+  const byCollection = await fetchShopifyProductsByCollection(categorySlug, 250);
+  if (byCollection.length) return byCollection.map(mapProductCard);
+
   const all = await fetchShopifyProducts({ first: 250, query: "available_for_sale:true" });
-
   const matched = all.filter((node) => productMatchesNavCategory(toCategoryMatchInput(node), categorySlug));
-
   if (matched.length) return matched.map(mapProductCard);
 
-  // Fallback: include products without available_for_sale filter (draft channel sync lag)
   const allUnfiltered = await fetchShopifyProducts({ first: 250 });
   return allUnfiltered
     .filter((node) => productMatchesNavCategory(toCategoryMatchInput(node), categorySlug))
     .map(mapProductCard);
+}
+
+/** All products on Headless storefront — for /shop and Explore. */
+export async function fetchAllProducts(limit = 250): Promise<ProductCardData[]> {
+  let nodes = await fetchShopifyProducts({ first: limit, query: "available_for_sale:true" });
+  if (nodes.length === 0) {
+    nodes = await fetchShopifyProducts({ first: limit });
+  }
+  return nodes.map(mapProductCard);
 }
 
 export async function searchProducts(opts: {

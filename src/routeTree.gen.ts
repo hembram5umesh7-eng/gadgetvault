@@ -14,6 +14,7 @@ import { Route as WarrantyRouteImport } from './routes/warranty'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SubadminRouteImport } from './routes/subadmin'
 import { Route as StaffRouteImport } from './routes/staff'
+import { Route as ShopRouteImport } from './routes/shop'
 import { Route as ShippingRouteImport } from './routes/shipping'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as RefundRouteImport } from './routes/refund'
@@ -90,6 +91,11 @@ const SubadminRoute = SubadminRouteImport.update({
 const StaffRoute = StaffRouteImport.update({
   id: '/staff',
   path: '/staff',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShopRoute = ShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShippingRoute = ShippingRouteImport.update({
@@ -376,6 +382,7 @@ export interface FileRoutesByFullPath {
   '/refund': typeof RefundRoute
   '/search': typeof SearchRoute
   '/shipping': typeof ShippingRoute
+  '/shop': typeof ShopRoute
   '/staff': typeof StaffRouteWithChildren
   '/subadmin': typeof SubadminRouteWithChildren
   '/terms': typeof TermsRoute
@@ -434,6 +441,7 @@ export interface FileRoutesByTo {
   '/refund': typeof RefundRoute
   '/search': typeof SearchRoute
   '/shipping': typeof ShippingRoute
+  '/shop': typeof ShopRoute
   '/terms': typeof TermsRoute
   '/warranty': typeof WarrantyRoute
   '/wishlist': typeof WishlistRoute
@@ -492,6 +500,7 @@ export interface FileRoutesById {
   '/refund': typeof RefundRoute
   '/search': typeof SearchRoute
   '/shipping': typeof ShippingRoute
+  '/shop': typeof ShopRoute
   '/staff': typeof StaffRouteWithChildren
   '/subadmin': typeof SubadminRouteWithChildren
   '/terms': typeof TermsRoute
@@ -553,6 +562,7 @@ export interface FileRouteTypes {
     | '/refund'
     | '/search'
     | '/shipping'
+    | '/shop'
     | '/staff'
     | '/subadmin'
     | '/terms'
@@ -611,6 +621,7 @@ export interface FileRouteTypes {
     | '/refund'
     | '/search'
     | '/shipping'
+    | '/shop'
     | '/terms'
     | '/warranty'
     | '/wishlist'
@@ -668,6 +679,7 @@ export interface FileRouteTypes {
     | '/refund'
     | '/search'
     | '/shipping'
+    | '/shop'
     | '/staff'
     | '/subadmin'
     | '/terms'
@@ -728,6 +740,7 @@ export interface RootRouteChildren {
   RefundRoute: typeof RefundRoute
   SearchRoute: typeof SearchRoute
   ShippingRoute: typeof ShippingRoute
+  ShopRoute: typeof ShopRoute
   StaffRoute: typeof StaffRouteWithChildren
   SubadminRoute: typeof SubadminRouteWithChildren
   TermsRoute: typeof TermsRoute
@@ -779,6 +792,13 @@ declare module '@tanstack/react-router' {
       path: '/staff'
       fullPath: '/staff'
       preLoaderRoute: typeof StaffRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shop': {
+      id: '/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/shipping': {
@@ -1260,6 +1280,7 @@ const rootRouteChildren: RootRouteChildren = {
   RefundRoute: RefundRoute,
   SearchRoute: SearchRoute,
   ShippingRoute: ShippingRoute,
+  ShopRoute: ShopRoute,
   StaffRoute: StaffRouteWithChildren,
   SubadminRoute: SubadminRouteWithChildren,
   TermsRoute: TermsRoute,

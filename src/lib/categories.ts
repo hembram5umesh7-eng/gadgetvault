@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getStoreCategories } from "@/lib/category.functions";
 
 export interface StoreCategory {
   id: string;
@@ -27,26 +27,16 @@ export function useCategories() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase
-      .from("categories")
-      .select("id,name,slug,description,image_url,sort_order")
-      .eq("active", true)
-      .order("sort_order")
-      .then(({ data }) => {
-        setCategories((data as StoreCategory[]) ?? []);
-        setLoading(false);
-      });
+    getStoreCategories()
+      .then((data) => setCategories(data))
+      .catch(() => setCategories([]))
+      .finally(() => setLoading(false));
   }, []);
 
   return { categories, loading };
 }
 
 export async function fetchCategoryBySlug(slug: string) {
-  const { data } = await supabase
-    .from("categories")
-    .select("id,name,slug,description,image_url,sort_order")
-    .eq("slug", slug)
-    .eq("active", true)
-    .maybeSingle();
-  return data as StoreCategory | null;
+  const { fetchStoreCategoryBySlug } = await import("@/lib/shopify-categories");
+  return fetchStoreCategoryBySlug(slug);
 }
