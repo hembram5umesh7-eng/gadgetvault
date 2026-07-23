@@ -39,7 +39,7 @@ function AdminCategories() {
 
   const save = async () => {
     if (!editing?.name.trim()) { toast.error("Name required"); return; }
-    const slug = editing.slug.trim() || slugify(editing.name);
+    const slug = slugify(editing.slug.trim() || editing.name);
     const payload = {
       name: editing.name.trim(),
       slug,

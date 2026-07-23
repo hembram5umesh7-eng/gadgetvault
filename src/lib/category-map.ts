@@ -1,4 +1,4 @@
-import { isBrowsableCollection } from "@/lib/shopify-categories";
+import { isBrowsableCollection, normalizeCategorySlug } from "@/lib/shopify-categories";
 
 /** Legacy navbar slugs — kept for backwards-compatible URLs and health checks */
 export const NAV_CATEGORY_SLUGS = [
@@ -64,11 +64,11 @@ export function resolveProductCategorySlug(input: CategoryMatchInput): string {
   if (fromTag) return fromTag;
 
   for (const handle of input.collectionHandles ?? []) {
-    if (isBrowsableCollection(handle)) return handle;
+    if (isBrowsableCollection(handle)) return normalizeCategorySlug(handle);
   }
 
   for (const title of input.collectionTitles ?? []) {
-    const slug = normalizeKey(title);
+    const slug = normalizeCategorySlug(title);
     if (isBrowsableCollection(slug)) return slug;
   }
 
