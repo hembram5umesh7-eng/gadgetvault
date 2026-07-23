@@ -17,7 +17,6 @@ import { fetchShopifyProducts } from "@/integrations/shopify/storefront";
 import { productMatchesNavCategory, toCategoryMatchInput, NAV_CATEGORY_SLUGS } from "@/lib/category-map";
 import { syncOrderToShopifyById } from "@/lib/shopify-order.functions";
 import { syncAllOrderStatusesWithShopify, ensureShopifyOrderWebhooks } from "@/lib/shopify-order-inbound";
-import { syncShopifyCollectionsToSupabase } from "@/lib/shopify-categories";
 import { appLocalOrigin, appPublicOrigin, shopifyAdminOAuthCallbackUrl, shopifyCustomerApiSetupValues } from "@/lib/site-url";
 
 const REQUIRED_SCOPES = [
@@ -272,13 +271,6 @@ export const runFullShopifySync = createServerFn({ method: "POST" })
     const products = await publishAllProductsToHeadless();
 
     const orderErrors: string[] = [];
-    let categoriesSynced = 0;
-    try {
-      const catSync = await syncShopifyCollectionsToSupabase();
-      categoriesSynced = catSync.synced;
-    } catch (err) {
-      orderErrors.push(`Categories: ${err instanceof Error ? err.message : "sync failed"}`);
-    }
 
     const { data: pending } = await supabaseAdmin
       .from("orders")
@@ -322,7 +314,6 @@ export const runFullShopifySync = createServerFn({ method: "POST" })
       );
     }
     if (webhooks.created.length) parts.push(`Webhooks registered: ${webhooks.created.join(", ")}`);
-    if (categoriesSynced > 0) parts.push(`Categories synced: ${categoriesSynced}`);
 
     return {
       ok: products.ok && ordersFailed === 0,

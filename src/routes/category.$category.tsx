@@ -56,10 +56,13 @@ function CategoryPage() {
           <div className="premium-card text-center py-16 px-6 text-muted-foreground space-y-3">
             <p className="text-base font-semibold text-foreground">No products in this category yet.</p>
             <p className="text-sm max-w-lg mx-auto">
-              Products in this collection appear automatically when assigned to this Shopify collection and published to Headless (gadgetvault).
+              Is collection mein abhi koi product nahi hai. Shopify Admin → Collection → products add karo aur Headless (gadgetvault) par publish karo.
             </p>
             <p className="text-xs">
-              Shopify Admin → Product → Collections → assign collection → Publishing → Headless ✓
+              Collections sirf Shopify mein manage hoti hain —{" "}
+              <a href="https://admin.shopify.com/store/gharstoreessential/collections" className="text-primary font-semibold" target="_blank" rel="noreferrer">
+                Open Shopify Collections
+              </a>
             </p>
           </div>
         ) : (

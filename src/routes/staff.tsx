@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth-context";
 import { syncSupabaseSession } from "@/lib/auth-session";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import {
-  LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Truck, ArrowLeft, UserCog,
+  LayoutDashboard, Package, ShoppingCart, Users, Truck, ArrowLeft, UserCog,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +12,6 @@ const NAV = [
   { label: "Dashboard", to: "/staff", icon: LayoutDashboard, exact: true as const },
   { label: "Orders", to: "/admin/orders", icon: ShoppingCart, exact: false as const },
   { label: "Products", to: "/admin/products", icon: Package, exact: false as const },
-  { label: "Categories", to: "/admin/categories", icon: FolderTree, exact: false as const },
   { label: "Suppliers", to: "/admin/manufacturers", icon: Truck, exact: false as const },
   { label: "Customers", to: "/admin/users", icon: Users, exact: false as const },
 ] as const;

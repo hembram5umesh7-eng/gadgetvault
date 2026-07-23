@@ -168,7 +168,7 @@ function AdminDashboard() {
             <Link to="/admin/products" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold flex items-center gap-2">
               <Package className="h-4 w-4 shrink-0" /> Products
             </Link>
-            <Link to="/admin/categories" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold">Categories</Link>
+            <Link to="/admin/shopify" hash="collections" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold">Collections</Link>
             <Link to="/admin/coupons" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold">Coupons</Link>
             <Link to="/admin/flash-sale" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold">Flash Sale</Link>
             <Link to="/admin/manufacturers" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold flex items-center gap-2">

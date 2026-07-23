@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth-context";
 import { syncSupabaseSession } from "@/lib/auth-session";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import {
-  LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Truck, ArrowLeft, UserCog, Tag, Rocket, Zap, Gift, Star, Plug, CreditCard, UserPlus,
+  LayoutDashboard, Package, ShoppingCart, Users, Truck, ArrowLeft, UserCog, Tag, Rocket, Zap, Gift, Star, Plug, CreditCard, UserPlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +12,6 @@ const NAV = [
   { label: "Dashboard", hint: "Overview", to: "/admin", icon: LayoutDashboard, exact: true as const, superOnly: false },
   { label: "Orders", hint: "Manage orders", to: "/admin/orders", icon: ShoppingCart, exact: false as const, superOnly: false },
   { label: "Products", hint: "Add / edit", to: "/admin/products", icon: Package, exact: false as const, superOnly: false },
-  { label: "Categories", hint: "Nav categories", to: "/admin/categories", icon: FolderTree, exact: false as const, superOnly: false },
   { label: "Coupons", hint: "Discount codes", to: "/admin/coupons", icon: Tag, exact: false as const, superOnly: false },
   { label: "Flash Sale", hint: "Sale prices", to: "/admin/flash-sale", icon: Zap, exact: false as const, superOnly: false },
   { label: "Reviews", hint: "Moderate", to: "/admin/reviews", icon: Star, exact: false as const, superOnly: false },

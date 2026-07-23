@@ -17,6 +17,9 @@ import { CheckCircle2, XCircle, ExternalLink, RefreshCw, Unplug, Link2, Copy } f
 import { ShopifyBraveButton } from "@/components/shopify-brave-button";
 import { appPublicOrigin } from "@/lib/site-url";
 import { SHOPIFY_CANONICAL_ORIGIN } from "@/lib/shopify-oauth-config";
+import { getStoreCategories } from "@/lib/category.functions";
+import type { StoreCategory } from "@/lib/shopify-categories";
+import { shopifyStoreDomain } from "@/integrations/shopify/config";
 
 const SHOPIFY_CONNECT_URL = `${SHOPIFY_CANONICAL_ORIGIN}/api/shopify/auth`;
 
@@ -45,11 +48,19 @@ function AdminShopifyPage() {
   const [tokenInput, setTokenInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [collections, setCollections] = useState<StoreCategory[]>([]);
+
+  const shopifyAdminUrl = `https://${shopifyStoreDomain() || "gharstoreessential.myshopify.com"}/admin`;
 
   const refresh = async () => {
     setLoading(true);
     try {
       setStatus(await loadStatus());
+      try {
+        setCollections(await getStoreCategories());
+      } catch {
+        setCollections([]);
+      }
     } catch {
       toast.error("Could not load Shopify status");
     } finally {
@@ -331,6 +342,53 @@ function AdminShopifyPage() {
                 </Button>
               )}
             </div>
+          </section>
+
+          <section id="collections" className="bg-card border rounded-xl p-5 space-y-4 scroll-mt-24">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="font-bold">Shopify Collections → Site Nav</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Categories sirf <strong>Shopify Admin</strong> se manage karo. Naya collection banao → products assign karo → yahan aur website nav mein auto dikhega.
+                  GadgetVault mein alag category banane ki zarurat nahi.
+                </p>
+              </div>
+              <Button asChild variant="outline" size="sm">
+                <a href={`${shopifyAdminUrl}/collections`} target="_blank" rel="noreferrer">
+                  <ExternalLink className="h-4 w-4 mr-1" /> Shopify Collections
+                </a>
+              </Button>
+            </div>
+            {collections.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Koi collection nahi mila — Shopify mein collection banao aur Sync Everything dabao.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left text-muted-foreground">
+                      <th className="p-2">Collection</th>
+                      <th className="p-2">Handle</th>
+                      <th className="p-2">Products</th>
+                      <th className="p-2">Site link</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {collections.map((c) => (
+                      <tr key={c.id} className="border-b border-border/50">
+                        <td className="p-2 font-semibold">{c.name}</td>
+                        <td className="p-2 font-mono text-xs">{c.slug}</td>
+                        <td className="p-2">{c.productCount > 0 ? c.productCount + "+" : "—"}</td>
+                        <td className="p-2">
+                          <Link to="/category/$category" params={{ category: c.slug }} className="text-primary font-semibold hover:underline">
+                            View on site →
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </section>
 
           <section className="bg-card border rounded-xl p-5 space-y-3">

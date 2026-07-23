@@ -12,6 +12,7 @@ import { formatINR } from "@/lib/order-utils";
 import { slugifyProduct } from "@/lib/product-utils";
 import { deleteAdminProduct } from "@/lib/admin.functions";
 import { useAuthedServerFn } from "@/lib/use-authed-server-fn";
+import { getStoreCategories } from "@/lib/category.functions";
 import { Plus, Pencil, Trash2, Package } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -72,9 +73,12 @@ function AdminProducts() {
   const [editing, setEditing] = useState<{ id?: string; data: ReturnType<typeof emptyProduct> } | null>(null);
 
   const loadCategories = async () => {
-    const { data, error } = await supabase.from("categories").select("slug,name").eq("active", true).order("sort_order");
-    if (error) { toast.error(error.message); return; }
-    setCategories((data as CategoryOption[]) ?? []);
+    try {
+      const data = await getStoreCategories();
+      setCategories(data.map((c) => ({ slug: c.slug, name: c.name })));
+    } catch {
+      setCategories([]);
+    }
   };
 
   const refresh = async () => {

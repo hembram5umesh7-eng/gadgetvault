@@ -1,14 +1,8 @@
 import { useEffect, useState } from "react";
 import { getStoreCategories } from "@/lib/category.functions";
+import type { StoreCategory } from "@/lib/shopify-categories";
 
-export interface StoreCategory {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  image_url: string | null;
-  sort_order: number;
-}
+export type { StoreCategory };
 
 const CATEGORY_COLORS = [
   "bg-brand-yellow",

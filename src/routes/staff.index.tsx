@@ -59,7 +59,7 @@ function StaffDashboard() {
             <Link to="/admin/products" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold flex items-center gap-2">
               <Package className="h-4 w-4" /> Manage products
             </Link>
-            <Link to="/admin/categories" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold flex items-center gap-2">
+            <Link to="/admin/shopify" hash="collections" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold flex items-center gap-2">
               <FolderTree className="h-4 w-4" /> Categories
             </Link>
             <Link to="/admin/users" className="p-3 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold flex items-center gap-2">

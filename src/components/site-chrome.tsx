@@ -24,12 +24,6 @@ import {
 import { cn } from "@/lib/utils";
 import { ThemeToggle, ThemeToggleRow } from "@/components/theme-toggle";
 
-const STORE_CATEGORIES = [
-  { label: "Kitchen Accessories", slug: "kitchen-accessories" },
-  { label: "Unique Gadgets", slug: "unique-gadgets" },
-  { label: "Necessities", slug: "necessities" },
-];
-
 function HeaderSearchForm({
   q,
   setQ,
@@ -92,9 +86,7 @@ export function SiteHeader() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchPanelRef = useRef<HTMLDivElement>(null);
 
-  const navItems = categories.length
-    ? categories.filter((c) => c.slug).map((c) => ({ label: c.name, slug: c.slug }))
-    : STORE_CATEGORIES;
+  const navItems = categories.filter((c) => c.slug).map((c) => ({ label: c.name, slug: c.slug }));
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -356,9 +348,7 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   const { categories } = useCategories();
-  const shopLinks = categories.length
-    ? categories.filter((c) => c.slug).map((c) => ({ label: c.name, slug: c.slug }))
-    : STORE_CATEGORIES;
+  const shopLinks = categories.filter((c) => c.slug).map((c) => ({ label: c.name, slug: c.slug }));
 
   return (
     <footer className="border-t bg-gradient-to-b from-muted/20 to-muted/40 mt-auto">
